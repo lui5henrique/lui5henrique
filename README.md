@@ -1,5 +1,5 @@
 <h1 align="center">Olá 👋, sou lui5henrique</h1>
-<h3 align="center">Um analista e desenvolvedor de sistemas do Brasil</h3>
+<h3 align="center">Um analista de dados e desenvolvedor de sistemas do Brasil</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=lui5henrique&label=Profile%20views&color=0e75b6&style=flat" alt="lui5henrique" /> </p>
 
