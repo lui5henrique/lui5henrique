@@ -1,7 +1,6 @@
 <h1 align="center">Olá 👋, sou lui5henrique</h1>
 <h3 align="center">## 👋 Olá! Seja bem-vindo(a) ao meu perfil!</h3>
-<br>
-<h3 aling="left">
+<h3 align="left">
 🎓 Sou estudante de Análise e Desenvolvimento de Sistemas na Faculdade Senac.  
 🚀 Apaixonado por dados, tecnologia e desenvolvimento de soluções criativas.  
 📊 Estudando e aplicando SQL, MySQL, Python, Power BI e conceitos de Engenharia de Dados.  
