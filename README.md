@@ -1,5 +1,5 @@
 <h1 align="center">Olá 👋, sou lui5henrique</h1>
-<h3 align="center">## 👋 Olá! Seja bem-vindo(a) ao meu perfil!
+<h3 align="left">## 👋 Olá! Seja bem-vindo(a) ao meu perfil!
 
 🎓 Sou estudante de Análise e Desenvolvimento de Sistemas na Faculdade Senac.  
 🚀 Apaixonado por dados, tecnologia e desenvolvimento de soluções criativas.  
