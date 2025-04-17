@@ -1,5 +1,17 @@
 <h1 align="center">Olá 👋, sou lui5henrique</h1>
-<h3 align="center">Um analista de dados e desenvolvedor de sistemas do Brasil</h3>
+<h3 align="center">## 👋 Olá! Seja bem-vindo(a) ao meu perfil!
+
+🎓 Sou estudante de Análise e Desenvolvimento de Sistemas na Faculdade Senac.  
+🚀 Apaixonado por dados, tecnologia e desenvolvimento de soluções criativas.  
+📊 Estudando e aplicando SQL, MySQL, Python, Power BI e conceitos de Engenharia de Dados.  
+💻 Também desenvolvendo habilidades em Frontend: HTML, CSS, JavaScript e React.
+
+🎯 Busco aplicar meus conhecimentos em projetos reais, estágios e colaborações.
+
+🔎 Sempre em constante aprendizado e aberto a novos desafios!
+
+📬 Conecte-se comigo no [LinkedIn]([https://www.linkedin.com/in/analista-luishenrique/])
+</h3>
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=lui5henrique&label=Profile%20views&color=0e75b6&style=flat" alt="lui5henrique" /> </p>
 
