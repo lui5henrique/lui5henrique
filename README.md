@@ -18,5 +18,6 @@ Colaborar com projetos e equipes de tecnologia, contribuindo com soluções orie
 ## 📫 Como me encontrar
 - LinkedIn: (https://www.linkedin.com/in/analista-luishenrique/)
 - E-mail: lh_bigdata@outlook.com
+- Instagram: https://www.instagram.com/_.lui5henrique/
 
 ---
