@@ -7,9 +7,9 @@
 ## 🛠️ Tecnologias em aprendizado
 - SQL (MySQL)
 - Python (para análise de dados)
+- Linguagem R (RStudio)
 - Power BI (relatórios e dashboards)
 - Engenharia de Dados (conceitos e pipelines)
-- Excel avançado e Pacote Office
 - Inglês técnico (leitura)
 
 ## 📌 Objetivo
