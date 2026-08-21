@@ -7,13 +7,13 @@
 ## 🛠️ Tecnologias em aprendizado
 - SQL (MySQL)
 - Python (para análise de dados)
-- Linguagem R (RStudio)
 - Power BI (relatórios e dashboards)
 - Engenharia de Dados (conceitos e pipelines)
+- Inteligência Artifical
 - Inglês técnico (leitura)
 
 ## 📌 Objetivo
-Colaborar com projetos e equipes de tecnologia, contribuindo com soluções orientadas por dados e buscando sempre aprender mais.
+Colaborar com projetos e equipes de tecnologia, contribuindo com soluções orientadas por dados.
 
 ## 📫 Como me encontrar
 - LinkedIn: (https://www.linkedin.com/in/analista-luishenrique/)
