@@ -1,4 +1,4 @@
-# 👋 Olá! Eu sou o Luis Henrique
+# Luis Henrique
 
 🎓 Estudante de Análise e Desenvolvimento de Sistemas  
 📊 Focado em iniciar carreira na área de Análise de Dados  
