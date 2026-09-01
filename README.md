@@ -1,7 +1,7 @@
 # Luis Henrique
 
-🎓 Estudante de Análise e Desenvolvimento de Sistemas  
-📊 Focado em iniciar carreira na área de Análise de Dados  
+🎓 Análise e Desenvolvimento de Sistemas  
+📊 Análise de Dados  
 💡 Em constante aprendizado com projetos práticos e cursos complementares
 
 ## 🛠️ Tecnologias em aprendizado
