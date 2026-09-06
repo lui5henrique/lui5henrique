@@ -1,4 +1,4 @@
-# Luis Henrique
+# Luis Henrique - Analytics Engineer
 
 🎓 Análise e Desenvolvimento de Sistemas  
 📊 Análise de Dados  
