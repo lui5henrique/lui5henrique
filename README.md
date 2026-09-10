@@ -9,7 +9,7 @@
 - Python (para análise de dados)
 - Power BI (relatórios e dashboards)
 - Engenharia de Dados (conceitos e pipelines)
-- Inteligência Artifical
+- Inteligência Artificial
 - Inglês técnico (leitura)
 
 ## 📌 Objetivo
