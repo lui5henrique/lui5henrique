@@ -4,10 +4,14 @@
 📊 Análise de Dados  
 💡 Em constante aprendizado com projetos práticos e cursos complementares
 
-## 🛠️ Tecnologias em aprendizado
-- SQL (MySQL)
-- Python (para análise de dados)
+## 💼 Aplicando profissionalmente
+- Python (análise de dados)
+- Power Query
 - Power BI (relatórios e dashboards)
+- DAX
+
+## 🛠️ Em aprendizado
+- SQL (MySQL)
 - Engenharia de Dados (conceitos e pipelines)
 - Inteligência Artificial
 - Inglês técnico (leitura)
