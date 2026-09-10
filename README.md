@@ -1,14 +1,16 @@
 # Luis Henrique - Analytics Engineer
 
-🎓 Análise e Desenvolvimento de Sistemas  
-📊 Análise de Dados  
-💡 Em constante aprendizado com projetos práticos e cursos complementares
+⚙️ Engenharia de Dados  
+📊 Análise de Dados
+🎓 Análise e Desenvolvimento de Sistemas
+Contra dados, não há argumentos.
 
 ## 💼 Aplicando profissionalmente
 - Python (análise de dados)
 - Power Query
 - Power BI (relatórios e dashboards)
 - DAX
+- HTML | CSS | JS (construção de dashboard WEB)
 
 ## 🛠️ Em aprendizado
 - SQL (MySQL)
