@@ -1,9 +1,9 @@
 # Luis Henrique - Analytics Engineer
 
 ⚙️ Engenharia de Dados  
-📊 Análise de Dados
-🎓 Análise e Desenvolvimento de Sistemas
-Contra dados, não há argumentos.
+📊 Análise de Dados\
+🎓 Análise e Desenvolvimento de Sistemas\
+"Contra dados, não há argumentos."
 
 ## 💼 Aplicando profissionalmente
 - Python (análise de dados)
