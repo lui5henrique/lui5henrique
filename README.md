@@ -3,6 +3,7 @@
 ⚙️ Engenharia de Dados  
 📊 Análise de Dados\
 🎓 Análise e Desenvolvimento de Sistemas\
+
 "Contra dados, não há argumentos."
 
 ## 💼 Aplicando profissionalmente
