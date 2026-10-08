@@ -1,8 +1,9 @@
 # Luis Henrique - Analytics Engineer
 
-⚙️ Engenharia de Dados  
-📊 Análise de Dados\
-🎓 Análise e Desenvolvimento de Sistemas\
+⚙️ Engenharia de Dados<br>
+📊 Análise de Dados<br>
+🎓 Análise e Desenvolvimento de Sistemas<br>
+🗄️ Desenvolvedor de Banco de Dados (Database Developer) | DBA
 
 "Contra dados, não há argumentos."
 
