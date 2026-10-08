@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Painel de Férias · Demo (dados fictícios)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: padrão institucional — topnav → abas de visão → filtros globais → conteúdo da visão; ficha do servidor em gaveta lateral */
+:root{
+  --agu-blue-deep:#0B3E6F; --agu-blue:#1472B8; --agu-blue-soft:#E7F1FA;
+  --agu-green:#2E9E3F; --agu-green-soft:#E9F7EB; --agu-green-ink:#1E7A2C;
+  --agu-yellow:#FFD400; --agu-yellow-soft:#FFF8DB; --agu-yellow-ink:#7A5F00; --gold:#C7A900;
+  --ink:#0F2436; --slate:#5B7089; --slate-light:#8CA0B4;
+  --bg:#F5F8FB; --card:#FFFFFF; --card-glass:rgba(255,255,255,.88); --bg-glass:rgba(245,248,251,.9);
+  --border:#E3EAF1; --grid:#EEF2F6; --hover:#F0F5FA; --muted-fill:#F7F9FC;
+  --danger:#D64545; --danger-soft:#FCEAEA; --danger-ink:#A83232;
+  --warn:#E09A00; --warn-soft:#FFF4DB; --warn-ink:#7A5200;
+  --st-done:#A9BACB; --st-done-ink:#1F3247; --st-gozo:#F2B600; --st-gozo-ink:#3B2E00; --st-prog:#0B3E6F; --st-saldo:#D64545;
+  --sec-1:#1472B8; --sec-2:#2E9E3F; --sec-3:#8A4FC2;
+  --hol:#C7A900; --hol-soft:#FBF4D2;
+  --radius-lg:20px; --radius-md:14px; --radius-sm:9px;
+  --shadow-soft:0 1px 2px rgba(15,36,54,.04), 0 8px 24px rgba(15,36,54,.06);
+  --shadow-pop:0 18px 50px rgba(15,36,54,.22);
+  --font-display:'Sora','Inter',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --agu-blue-deep:#9CCBF2; --agu-blue:#4FA3E3; --agu-blue-soft:#132F48;
+  --agu-green:#4CC160; --agu-green-soft:#14361F; --agu-green-ink:#86DD94;
+  --agu-yellow:#FFD400; --agu-yellow-soft:#362E10; --agu-yellow-ink:#F2D35A; --gold:#E2C53A;
+  --ink:#E6EEF6; --slate:#9FB2C6; --slate-light:#6F849A;
+  --bg:#0B1520; --card:#11202F; --card-glass:rgba(17,32,47,.88); --bg-glass:rgba(11,21,32,.9);
+  --border:#20354A; --grid:#1A2C3E; --hover:#16293C; --muted-fill:#0F1D2B;
+  --danger:#F07070; --danger-soft:#3A1C20; --danger-ink:#F7A9A9;
+  --warn:#F2B13A; --warn-soft:#3A2C10; --warn-ink:#F7CF7D;
+  --st-done:#4F667C; --st-done-ink:#E6EEF6; --st-gozo:#F5C443; --st-gozo-ink:#2B2100; --st-prog:#8EC2EE; --st-saldo:#F07070;
+  --sec-1:#3A8BD0; --sec-2:#3AA352; --sec-3:#9B6BD6;
+  --hol:#E2C53A; --hol-soft:#2E2812;
+  --shadow-soft:0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.28);
+  --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+  color-scheme:dark; } }
+:root[data-theme="dark"]{
+  --agu-blue-deep:#9CCBF2; --agu-blue:#4FA3E3; --agu-blue-soft:#132F48;
+  --agu-green:#4CC160; --agu-green-soft:#14361F; --agu-green-ink:#86DD94;
+  --agu-yellow:#FFD400; --agu-yellow-soft:#362E10; --agu-yellow-ink:#F2D35A; --gold:#E2C53A;
+  --ink:#E6EEF6; --slate:#9FB2C6; --slate-light:#6F849A;
+  --bg:#0B1520; --card:#11202F; --card-glass:rgba(17,32,47,.88); --bg-glass:rgba(11,21,32,.9);
+  --border:#20354A; --grid:#1A2C3E; --hover:#16293C; --muted-fill:#0F1D2B;
+  --danger:#F07070; --danger-soft:#3A1C20; --danger-ink:#F7A9A9;
+  --warn:#F2B13A; --warn-soft:#3A2C10; --warn-ink:#F7CF7D;
+  --st-done:#4F667C; --st-done-ink:#E6EEF6; --st-gozo:#F5C443; --st-gozo-ink:#2B2100; --st-prog:#8EC2EE; --st-saldo:#F07070;
+  --sec-1:#3A8BD0; --sec-2:#3AA352; --sec-3:#9B6BD6;
+  --hol:#E2C53A; --hol-soft:#2E2812;
+  --shadow-soft:0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.28);
+  --shadow-pop:0 18px 50px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+button{font-family:inherit;cursor:pointer;color:inherit}
+select,input{font-family:inherit;color:var(--ink)}
+.container{max-width:1440px;margin:0 auto;padding-inline:32px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- TOPNAV ---------- */
+.topnav{position:sticky;top:env(safe-area-inset-top,0px);z-index:60;background:var(--card-glass);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.topnav-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 32px;max-width:1440px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand-logo{height:38px;width:auto;display:block;background:#fff;border-radius:8px;padding:2px 4px}
+.brand-text{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.brand-title{font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--agu-blue-deep)}
+.brand-sub{font-size:11.5px;color:var(--slate);letter-spacing:.02em}
+.nav-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;color:var(--slate);background:var(--bg);border:1px solid var(--border);padding:6px 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip b{color:var(--ink)}
+.dot-live{width:6px;height:6px;border-radius:50%;background:var(--agu-green);box-shadow:0 0 0 3px var(--agu-green-soft)}
+.btn{border:none;border-radius:999px;padding:9px 16px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:transform .15s,box-shadow .15s,background .15s,border-color .15s;white-space:nowrap}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--agu-blue-deep);color:var(--card)}
+.btn-primary:hover{box-shadow:0 4px 14px rgba(11,62,111,.3)}
+.btn-ghost{background:var(--card);color:var(--agu-blue-deep);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--agu-blue);background:var(--agu-blue-soft)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;padding-block:28px 0;background:
+  radial-gradient(60% 100% at 10% 0%, rgba(255,212,0,.14), transparent 60%),
+  radial-gradient(50% 90% at 92% 0%, rgba(46,158,63,.12), transparent 60%),
+  radial-gradient(80% 120% at 50% -20%, rgba(20,114,184,.10), transparent 65%)}
+.hero-top{display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:18px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--agu-blue);margin:0 0 6px}
+.hero-title{font-family:var(--font-display);font-size:25px;font-weight:700;margin:0;text-wrap:balance;max-width:780px;line-height:1.2}
+.hero-title .grad{background:linear-gradient(92deg,var(--agu-blue-deep) 5%,var(--agu-blue) 40%,var(--agu-green) 75%,var(--gold) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-desc{color:var(--slate);font-size:13.5px;max-width:640px;margin:6px 0 0}
+
+/* ---------- VIEW TABS ---------- */
+.viewtabs{display:flex;gap:2px;margin-top:20px;overflow-x:auto;scrollbar-width:none}
+.viewtabs::-webkit-scrollbar{display:none}
+.vtab{border:none;background:none;padding:11px 16px;font-size:13px;font-weight:600;color:var(--slate);border-bottom:2.5px solid transparent;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.vtab svg{width:16px;height:16px}
+.vtab:hover{color:var(--agu-blue-deep)}
+.vtab.active{color:var(--agu-blue-deep);border-bottom-color:var(--agu-blue-deep)}
+.vtab .cnt{font-size:10.5px;font-weight:700;background:var(--danger-soft);color:var(--danger-ink);border-radius:999px;padding:1px 7px}
+.hero-rule{border-bottom:1px solid var(--border)}
+
+/* ---------- FILTERS ---------- */
+.filterbar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 59px);z-index:50;background:var(--bg-glass);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+.filterbar-row{display:flex;gap:10px;padding-block:10px;align-items:flex-end;flex-wrap:wrap}
+.ff{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ff label,.lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);padding-left:2px}
+.seg{display:inline-flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:3px;flex-wrap:wrap}
+.seg button{border:none;background:none;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--slate);white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.seg button i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.seg button.active{background:var(--agu-blue-deep);color:var(--card)}
+.seg button:hover:not(.active){background:var(--agu-blue-soft);color:var(--agu-blue-deep)}
+.fctl{border:1px solid var(--border);background:var(--card);border-radius:10px;padding:7px 10px;font-size:12.5px;min-width:0;outline:none;height:34px}
+.fctl:focus{border-color:var(--agu-blue)}
+.fctl.has-value{border-color:var(--agu-blue);background:var(--agu-blue-soft);font-weight:600}
+.searchbox{position:relative}
+.searchbox input{padding-left:30px;width:200px}
+.searchbox svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--slate-light)}
+.searchbox kbd{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;font-family:inherit;border:1px solid var(--border);border-radius:5px;padding:0 5px;color:var(--slate-light);background:var(--bg)}
+.fb-spacer{flex:1}
+
+/* ---------- MAIN / PANELS ---------- */
+main{padding-block:22px 60px}
+.view[hidden]{display:none!important}
+.section-title{font-family:var(--font-display);font-size:15.5px;font-weight:700;margin:0 0 3px;text-wrap:balance}
+.section-desc{font-size:12px;color:var(--slate);margin:0 0 10px;max-width:72ch}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px 22px;box-shadow:var(--shadow-soft);min-width:0}
+.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.grid{display:grid;gap:18px;margin-bottom:18px}
+.g-2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.g-21{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.g-12{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+.chartbox{position:relative;height:290px;margin-top:4px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--slate);align-items:center}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;display:inline-block;flex-shrink:0}
+.toggle{display:inline-flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:999px;padding:3px}
+.toggle button{border:none;background:none;border-radius:999px;padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--slate)}
+.toggle button.active{background:var(--card);color:var(--agu-blue-deep);box-shadow:0 1px 3px rgba(15,36,54,.12)}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 16px 14px;box-shadow:var(--shadow-soft);min-width:0;display:flex;flex-direction:column;gap:4px;position:relative;text-align:left;transition:border-color .15s, transform .15s}
+button.kpi{font:inherit;cursor:pointer}
+button.kpi:hover{border-color:var(--agu-blue);transform:translateY(-1px)}
+.kpi-label{font-size:11.5px;color:var(--slate);font-weight:600;display:flex;align-items:center;gap:6px}
+.kpi-value{font-family:var(--font-display);font-size:25px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;display:flex;align-items:baseline;gap:6px;line-height:1.15}
+.kpi-value small{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--slate-light)}
+.kpi-sub{font-size:11.5px;color:var(--slate-light);line-height:1.4}
+.kpi-row{display:flex;align-items:center;gap:12px}
+.kpi.live{background:linear-gradient(180deg,var(--agu-yellow-soft),var(--card) 65%)}
+.kpi.crit{background:linear-gradient(180deg,var(--danger-soft),var(--card) 65%)}
+.kpi.crit .kpi-value{color:var(--danger)}
+.kpi.crit .kpi-label{color:var(--danger-ink)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--st-gozo);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(242,182,0,.55)}70%{box-shadow:0 0 0 8px rgba(242,182,0,0)}100%{box-shadow:0 0 0 0 rgba(242,182,0,0)}}
+.ring{flex-shrink:0}
+
+/* Resumo executivo */
+.brief{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}
+.brief ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.brief li{display:grid;grid-template-columns:22px 1fr;gap:8px;font-size:13px;line-height:1.5}
+.brief li .ic{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:800}
+.ic.crit{background:var(--danger-soft);color:var(--danger-ink)}
+.ic.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.ic.ok{background:var(--agu-green-soft);color:var(--agu-green-ink)}
+.ic.info{background:var(--agu-blue-soft);color:var(--agu-blue-deep)}
+.brief b{font-weight:700}
+
+/* alerts / upcoming */
+.al{display:grid;grid-template-columns:4px 1fr;gap:12px;border:1px solid var(--border);border-radius:var(--radius-md);padding:11px 14px 11px 0;background:var(--card)}
+.al .stripe{border-radius:0 4px 4px 0}
+.al.crit .stripe{background:var(--danger)} .al.warn .stripe{background:var(--warn)} .al.info .stripe{background:var(--agu-blue)} .al.ok .stripe{background:var(--agu-green)}
+.al h4{margin:0;font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.al p{margin:3px 0 0;font-size:12px;color:var(--slate)}
+.stack{display:flex;flex-direction:column;gap:10px}
+.up-item{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 6px;border-bottom:1px solid var(--border);border-radius:10px;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;text-align:left;width:100%;font:inherit}
+.up-item:hover{background:var(--hover)}
+.up-item:last-child{border-bottom:none}
+.datebox{background:var(--agu-blue-soft);border-radius:10px;text-align:center;padding:5px 0;line-height:1.1}
+.datebox b{display:block;font-family:var(--font-display);font-size:17px;color:var(--agu-blue-deep)}
+.datebox span{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--agu-blue)}
+.nm{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{font-size:11px;color:var(--slate)}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;white-space:nowrap}
+.b-green{background:var(--agu-green-soft);color:var(--agu-green-ink)}
+.b-red{background:var(--danger-soft);color:var(--danger-ink)}
+.b-gray{background:var(--grid);color:var(--slate)}
+.b-amber{background:var(--warn-soft);color:var(--warn-ink)}
+.b-yellow{background:var(--agu-yellow-soft);color:var(--agu-yellow-ink)}
+.b-blue{background:var(--agu-blue-soft);color:var(--agu-blue-deep)}
+.b-hol{background:var(--hol-soft);color:var(--agu-yellow-ink)}
+.sectag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--slate);white-space:nowrap}
+.sectag i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;font-family:var(--font-display)}
+
+/* ---------- GANTT ---------- */
+.gtools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gnav{display:inline-flex;align-items:center;gap:4px}
+.gperiod{font-family:var(--font-display);font-weight:700;font-size:13px;min-width:150px;text-align:center}
+.gantt-scroll{overflow-x:auto;margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-md)}
+.gantt{min-width:1000px;--lbl:260px}
+.g-head,.g-row,.g-group{display:grid;grid-template-columns:var(--lbl) 1fr}
+.g-head{background:var(--muted-fill);border-bottom:1px solid var(--border)}
+.g-head .g-lbl{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);padding:10px 14px;display:flex;align-items:flex-end}
+.g-cols{display:flex;position:relative}
+.g-col{flex:1;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);padding:8px 0 18px 6px;border-left:1px solid var(--border);min-width:0;overflow:hidden;white-space:nowrap}
+.g-col small{display:block;font-weight:600;color:var(--slate-light);letter-spacing:0;text-transform:none;font-size:10px}
+.g-col.cur{color:var(--agu-blue-deep);background:var(--agu-blue-soft)}
+.g-col.day{padding:6px 0;text-align:center;font-size:10px}
+.g-col.day small{font-size:9px}
+.g-col.we{background:var(--grid)}
+.g-col.hol{background:var(--hol-soft);color:var(--agu-yellow-ink)}
+.g-group{background:var(--muted-fill);border-bottom:1px solid var(--border)}
+.g-group .g-lbl{padding:7px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:8px}
+.g-group .g-track{min-height:0}
+.g-group .occ{font-size:10.5px;color:var(--slate);font-weight:600;letter-spacing:0;text-transform:none}
+.g-row{border-bottom:1px solid var(--border)}
+.g-row:hover{background:var(--hover)}
+.g-row .g-lbl{padding:8px 14px;display:flex;align-items:center;gap:10px;min-width:0;border-right:1px solid var(--border);background:none;border-top:none;border-bottom:none;border-left:none;text-align:left;font:inherit;cursor:pointer}
+.g-row .g-lbl:hover .g-name{color:var(--agu-blue-deep);text-decoration:underline}
+.g-lbl-txt{display:flex;flex-direction:column;min-width:0;gap:1px}
+.g-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.g-meta{font-size:10.5px;color:var(--slate);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.g-track{position:relative;min-height:46px;overflow:hidden}
+.g-bg{position:absolute;inset:0;pointer-events:none}
+.g-bg i{position:absolute;top:0;bottom:0}
+.g-bg .m{border-left:1px solid var(--grid)}
+.g-bg .we{background:var(--grid);opacity:.6}
+.g-bg .hl{background:var(--hol-soft)}
+.g-bg .hline{width:1px;background:var(--hol);opacity:.4}
+.g-bar{position:absolute;top:11px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums;overflow:hidden;white-space:nowrap;min-width:5px;border:none;padding:0 4px;transition:transform .12s, box-shadow .12s;z-index:2}
+.g-bar:hover,.g-bar:focus-visible{transform:translateY(-1px);box-shadow:0 5px 14px rgba(15,36,54,.25);z-index:4}
+.s-concluida{background:var(--st-done);color:var(--st-done-ink)}
+.s-gozo{background:var(--st-gozo);color:var(--st-gozo-ink)}
+.s-programada{background:var(--st-prog);color:var(--card)}
+.s-sim{background:repeating-linear-gradient(135deg,var(--agu-green) 0 6px,var(--agu-green-soft) 6px 10px);color:var(--ink);border:2px solid var(--agu-green)!important}
+.g-bar.conflict::after{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 2px var(--danger)}
+.g-bar.clipL{border-top-left-radius:0;border-bottom-left-radius:0}
+.g-bar.clipR{border-top-right-radius:0;border-bottom-right-radius:0}
+.g-today{position:absolute;top:0;bottom:0;width:2px;background:var(--danger);z-index:3;pointer-events:none}
+.g-today-tag{position:absolute;top:0;transform:translateX(-50%);background:var(--danger);color:#fff;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:0 0 6px 6px;z-index:5;white-space:nowrap}
+.g-empty{position:absolute;inset:0;display:flex;align-items:center;padding-left:14px;font-size:11.5px;color:var(--danger-ink);font-weight:600;gap:8px;z-index:1}
+.g-empty::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--danger)}
+
+/* heat */
+.heat-scroll{overflow-x:auto;margin-top:8px}
+.heat{display:grid;gap:3px;min-width:900px;align-items:center}
+.heat-lbl{font-size:11.5px;font-weight:600;color:var(--slate);padding-right:8px;white-space:nowrap}
+.heat-cell{height:26px;border-radius:4px;background:var(--grid);position:relative;border:none;padding:0}
+.heat-cell.today{box-shadow:0 0 0 2px var(--danger)}
+.heat-cell .n{position:absolute;inset:0;display:grid;place-items:center;font-size:9.5px;font-weight:700;color:#fff}
+.heat-mlbl{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--slate-light);letter-spacing:.04em;white-space:nowrap}
+.scale{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--slate)}
+.scale i{width:20px;height:10px;border-radius:3px;display:inline-block}
+
+/* ---------- CALENDAR ---------- */
+.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px}
+.cal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.cal-title{font-family:var(--font-display);font-size:19px;font-weight:700}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal-dow{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--slate-light);padding:2px 4px}
+.cal-day{min-height:104px;border:1px solid var(--border);border-radius:12px;padding:7px 8px;background:var(--card);display:flex;flex-direction:column;gap:5px;text-align:left;font:inherit;cursor:pointer;transition:border-color .12s, box-shadow .12s;min-width:0}
+.cal-day:hover{border-color:var(--agu-blue)}
+.cal-day.sel{border-color:var(--agu-blue-deep);box-shadow:0 0 0 2px var(--agu-blue-soft)}
+.cal-day.out{opacity:.4}
+.cal-day.we{background:var(--muted-fill)}
+.cal-day.hol{background:var(--hol-soft)}
+.cal-day.today .cal-n{background:var(--danger);color:#fff}
+.cal-top{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.cal-n{font-family:var(--font-display);font-weight:700;font-size:12.5px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center}
+.cal-hol{font-size:9.5px;font-weight:700;color:var(--agu-yellow-ink);line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cal-people{display:flex;flex-wrap:wrap;gap:3px}
+.cal-p{font-size:10px;font-weight:700;color:#fff;border-radius:6px;padding:1px 5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.cal-p.st-gozo{outline:2px solid var(--st-gozo);outline-offset:-1px}
+.cal-cap{margin-top:auto;height:4px;border-radius:999px;background:var(--grid);overflow:hidden}
+.cal-cap i{display:block;height:100%;background:var(--agu-green)}
+.cal-cap.lo i{background:var(--warn)} .cal-cap.crit i{background:var(--danger)}
+.daylist{display:flex;flex-direction:column;gap:8px}
+.daylist .row{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;border:1px solid var(--border);background:none;font:inherit;text-align:left;cursor:pointer;width:100%}
+.daylist .row:hover{background:var(--hover)}
+
+/* ---------- TEAM ---------- */
+.team-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pcard{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-soft);display:flex;flex-direction:column;gap:12px;text-align:left;font:inherit;cursor:pointer;transition:border-color .15s, transform .15s;min-width:0}
+.pcard:hover{border-color:var(--agu-blue);transform:translateY(-2px)}
+.pcard-top{display:flex;gap:12px;align-items:center;min-width:0}
+.pcard-body{display:flex;gap:14px;align-items:center}
+.pcard-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:1}
+.pcard-stats div{display:flex;flex-direction:column}
+.pcard-stats b{font-family:var(--font-display);font-size:16px;font-variant-numeric:tabular-nums}
+.pcard-stats span{font-size:10.5px;color:var(--slate)}
+.pchips{display:flex;flex-wrap:wrap;gap:5px}
+.pchip{font-size:10.5px;font-weight:600;border-radius:7px;padding:3px 7px;display:inline-flex;align-items:center;gap:5px;background:var(--grid);color:var(--slate)}
+.pchip i{width:7px;height:7px;border-radius:50%}
+.table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
+table.dt{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1050px}
+table.dt thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);background:var(--muted-fill);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+table.dt thead th:hover{color:var(--agu-blue-deep)}
+table.dt td{padding:9px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+table.dt tbody tr{cursor:pointer}
+table.dt tbody tr:last-child td{border-bottom:none}
+table.dt tbody tr:hover{background:var(--agu-blue-soft)}
+.num{text-align:right!important;font-variant-numeric:tabular-nums}
+.mbar{display:inline-flex;width:84px;height:6px;border-radius:999px;background:var(--grid);overflow:hidden;vertical-align:middle;margin-right:8px;gap:1px}
+.mbar i{display:block;height:100%}
+
+/* ---------- SIMULADOR ---------- */
+.sim-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:end}
+.sim-form .fctl{width:100%}
+.sim-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.sim-kpi{background:var(--muted-fill);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px}
+.sim-kpi b{display:block;font-family:var(--font-display);font-size:22px;font-variant-numeric:tabular-nums}
+.sim-kpi span{font-size:11.5px;color:var(--slate)}
+.checks{display:flex;flex-direction:column;gap:8px}
+.check{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;font-size:12.5px;padding:10px 12px;border-radius:12px;border:1px solid var(--border)}
+.check .ic{width:24px;height:24px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:800}
+.check p{margin:2px 0 0;font-size:11.5px;color:var(--slate)}
+.sugg{display:flex;flex-direction:column;gap:8px}
+.sugg button{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--card);font:inherit;text-align:left;cursor:pointer}
+.sugg button:hover{border-color:var(--agu-green);background:var(--agu-green-soft)}
+.rank{width:26px;height:26px;border-radius:50%;background:var(--agu-green-soft);color:var(--agu-green-ink);display:grid;place-items:center;font-weight:800;font-size:12px}
+
+/* ---------- QUALIDADE ---------- */
+.q-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:center}
+.q-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.q-stat{background:var(--muted-fill);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px}
+.q-stat b{display:block;font-family:var(--font-display);font-size:22px}
+.q-stat span{font-size:11.5px;color:var(--slate)}
+.rule{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--border)}
+.rule:last-child{border-bottom:none}
+.rule .ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-weight:800;font-size:13px}
+.rule h4{margin:0;font-size:13px}
+.rule p{margin:3px 0 0;font-size:12px;color:var(--slate)}
+.rule .basis{font-size:11px;color:var(--slate-light);margin-top:3px}
+.matrix-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-md)}
+table.mx{border-collapse:collapse;width:100%;font-size:12px;min-width:900px}
+table.mx th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--slate);background:var(--muted-fill);padding:9px 8px;border-bottom:1px solid var(--border);text-align:center;white-space:nowrap}
+table.mx th:first-child{text-align:left;padding-left:14px}
+table.mx td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:center}
+table.mx td:first-child{text-align:left;padding-left:14px;font-weight:600;white-space:nowrap}
+table.mx tr:last-child td{border-bottom:none}
+.mk{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:7px;font-size:11px;font-weight:800}
+.mk.ok{background:var(--agu-green-soft);color:var(--agu-green-ink)}
+.mk.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.mk.crit{background:var(--danger-soft);color:var(--danger-ink)}
+.mk.na{background:var(--grid);color:var(--slate-light)}
+.issues{counter-reset:i;display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.issues li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;font-size:12.5px;align-items:start}
+.issues code{font-size:11px;background:var(--grid);border-radius:5px;padding:1px 5px}
+.cellref{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;font-weight:700;background:var(--agu-blue-soft);color:var(--agu-blue-deep);border-radius:6px;padding:3px 7px;white-space:nowrap}
+.sources{font-size:12px;color:var(--slate);display:flex;flex-direction:column;gap:6px;margin:0;padding-left:18px}
+.sources a{color:var(--agu-blue-deep)}
+
+/* ---------- DRAWER ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,24,38,.4);z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--card);z-index:91;box-shadow:var(--shadow-pop);transform:translateX(102%);transition:transform .25s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.open{transform:none}
+.dr-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start}
+.dr-head h3{margin:0;font-family:var(--font-display);font-size:17px;text-wrap:balance}
+.dr-body{padding:18px 22px 30px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+.dr-close{margin-left:auto;background:none;border:none;font-size:24px;line-height:1;color:var(--slate-light);padding:2px 6px;border-radius:8px}
+.dr-close:hover{background:var(--hover);color:var(--ink)}
+.dr-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dr-stats div{background:var(--muted-fill);border:1px solid var(--border);border-radius:12px;padding:9px 10px}
+.dr-stats b{display:block;font-family:var(--font-display);font-size:18px;font-variant-numeric:tabular-nums}
+.dr-stats span{font-size:10.5px;color:var(--slate)}
+.per{border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}
+.per .no{font-family:var(--font-display);font-weight:700;color:var(--slate-light);font-size:12px}
+.mini-tl{position:relative;height:30px;background:var(--muted-fill);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.mini-tl i{position:absolute;top:6px;bottom:6px;border-radius:4px}
+.mini-tl .t{width:2px;top:0;bottom:0;background:var(--danger);border-radius:0}
+.mini-axis{display:flex;justify-content:space-between;font-size:10px;color:var(--slate-light);margin-top:4px}
+
+/* tooltip */
+.tip{position:fixed;z-index:200;pointer-events:none;background:var(--ink);color:var(--bg);font-size:11.5px;line-height:1.5;padding:9px 11px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:300px;opacity:0;transition:opacity .1s}
+.tip.show{opacity:1}
+.tip b{display:block;font-size:12px;margin-bottom:2px}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,24,38,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:var(--radius-lg);width:100%;max-width:540px;padding:26px;box-shadow:var(--shadow-pop)}
+.modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.modal h3{font-family:var(--font-display);margin:0 0 4px;font-size:17px}
+.modal p{color:var(--slate);font-size:12.5px;margin:0 0 16px}
+.dropzone{border:1.5px dashed var(--border);border-radius:var(--radius-md);padding:26px 18px;text-align:center;color:var(--slate);font-size:12.5px;background:var(--bg);cursor:pointer;transition:border-color .15s,background .15s}
+.dropzone.drag{border-color:var(--agu-blue);background:var(--agu-blue-soft)}
+.dropzone svg{width:26px;height:26px;color:var(--agu-blue);margin-bottom:8px}
+.dropzone b{color:var(--agu-blue-deep)}
+.file-req{margin-top:14px;font-size:11.5px;color:var(--slate);background:var(--bg);border-radius:10px;padding:10px 12px}
+.upload-status{margin-top:14px;font-size:12.5px;padding:10px 12px;border-radius:10px}
+.upload-status.ok{background:var(--agu-green-soft);color:var(--agu-green-ink)}
+.upload-status.err{background:var(--danger-soft);color:var(--danger-ink)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:12.5px;font-weight:600;z-index:210;opacity:0;transition:all .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+footer{border-top:1px solid var(--border);padding-block:22px 40px;color:var(--slate-light);font-size:11.5px}
+footer .footer-inner{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.empty{padding:36px 20px;text-align:center;color:var(--slate);font-size:13px}
+::-webkit-scrollbar{height:8px;width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--agu-blue);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+@media (max-width:1240px){
+  .kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g-2,.g-21,.g-12,.cal-wrap{grid-template-columns:minmax(0,1fr)}
+  .sim-form,.sim-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:900px){
+  .filterbar{position:static}
+  .q-hero{grid-template-columns:minmax(0,1fr)}
+  .brief{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .container{padding-inline:16px}
+  .topnav-inner{padding:10px 16px}
+  .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero-title{font-size:20px}
+  .brand-sub,.hide-sm{display:none}
+  .searchbox input{width:100%}
+  .searchbox{width:100%}
+  .ff{width:100%}
+  .fctl{width:100%}
+  .cal{gap:3px}
+  .cal-day{min-height:64px;padding:4px;border-radius:8px}
+  .cal-p{font-size:0;width:8px;height:8px;padding:0;border-radius:50%}
+  .cal-hol{display:none}
+  .sim-form,.sim-kpis,.q-stats,.dr-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+
+<div class="topnav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <img class="brand-logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48cmVjdCB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHJ4PSIxNCIgZmlsbD0iIzFmNGU4YyIvPjxyZWN0IHg9IjE0IiB5PSIxOCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjMyIiByeD0iNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMTQgMjhoMzZNMjQgMTJ2MTBNNDAgMTJ2MTAiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=" alt="Logo">
+      <div class="brand-text">
+        <span class="brand-title">Painel de Férias</span>
+        <span class="brand-sub" id="brandSub">Coordenação Exemplo · dados fictícios</span>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <span class="chip hide-sm"><span class="dot-live"></span> Posição em <b id="todayLbl">—</b></span>
+      <button class="btn btn-ghost btn-icon" id="themeBtn" type="button" aria-label="Alternar tema claro/escuro" title="Alternar tema">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="btn btn-primary" id="openUploadBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Atualizar base
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="container">
+    <div class="hero-top">
+      <div>
+        <p class="eyebrow" id="eyebrow">Programação de férias · COEX · 2026</p>
+        <h1 class="hero-title">Quem está de férias, quem sai em breve e <span class="grad">quanto ainda falta programar.</span></h1>
+        <p class="hero-desc">Situação recalculada pela data de hoje, dias úteis descontando feriados e pontos facultativos federais, e validação automática das regras da Lei 8.112/90.</p>
+      </div>
+    </div>
+    <nav class="viewtabs" id="viewtabs" aria-label="Visões do painel">
+      <button class="vtab active" data-view="geral" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Visão geral</button>
+      <button class="vtab" data-view="linha" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="14" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="5" y1="18" x2="16" y2="18"/></svg>Linha do tempo</button>
+      <button class="vtab" data-view="calendario" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendário</button>
+      <button class="vtab" data-view="equipe" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Equipe</button>
+      <button class="vtab" data-view="simulador" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Simulador</button>
+      <button class="vtab" data-view="qualidade" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Qualidade dos dados <span class="cnt" id="qCnt" hidden>0</span></button>
+    </nav>
+  </div>
+  <div class="hero-rule"></div>
+</div>
+
+<div class="filterbar">
+  <div class="container">
+    <div class="filterbar-row">
+      <div class="ff"><label>Setor</label><div class="seg" id="segSetor"></div></div>
+      <div class="ff"><label for="fServ">Servidor</label><select class="fctl" id="fServ" style="width:230px"></select></div>
+      <div class="ff"><label for="fSit">Situação</label>
+        <select class="fctl" id="fSit">
+          <option value="">Todas</option><option value="gozo">Em gozo</option><option value="programada">Programada</option><option value="concluida">Concluída</option><option value="saldo">Com saldo a programar</option>
+        </select></div>
+      <div class="ff searchbox"><label for="fQ">Busca</label>
+        <div style="position:relative"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+        <input class="fctl" id="fQ" type="search" placeholder="Nome ou SIAPE" autocomplete="off"><kbd class="hide-sm">/</kbd></div></div>
+      <div class="fb-spacer"></div>
+      <div class="ff"><span class="chip" id="chipCount">—</span></div>
+      <div class="ff"><button class="btn btn-ghost btn-sm" id="clearBtn" type="button">Limpar filtros</button></div>
+    </div>
+  </div>
+</div>
+
+<main class="container">
+
+  <!-- ================= VISÃO GERAL ================= -->
+  <section class="view" id="v-geral">
+    <div class="kpi-grid" id="kpis"></div>
+    <div class="grid g-21">
+      <div class="panel">
+        <div class="panel-head"><div><h3 class="section-title">Resumo executivo</h3><p class="section-desc">Leitura automática da programação filtrada, atualizada a cada acesso.</p></div>
+          <button class="btn btn-ghost btn-sm" id="copyBrief" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copiar resumo</button></div>
+        <div class="brief"><ul id="brief"></ul></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3 class="section-title">Próximas saídas</h3><p class="section-desc">Clique para abrir a ficha do servidor.</p></div></div>
+        <div id="upcoming"></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><div><h3 class="section-title">Equipe disponível por dia útil</h3><p class="section-desc">Quantos servidores estão trabalhando em cada dia útil do período (fins de semana, feriados e pontos facultativos de dia inteiro excluídos). Os vales mostram quando a equipe fica mais enxuta.</p></div>
+        <div class="legend" id="availLegend"></div></div>
+      <div class="chartbox" style="height:260px"><canvas id="chAvail" role="img" aria-label="Gráfico de servidores disponíveis por dia útil"></canvas></div>
+    </div>
+    <div class="grid g-2">
+      <div class="panel">
+        <div class="panel-head"><div><h3 class="section-title">Ausências por mês</h3><p class="section-desc" id="mesDesc">Dias de férias em cada mês, por setor.</p></div>
+          <div class="toggle" id="mesToggle"><button class="active" data-v="uteis" type="button">Dias úteis</button><button data-v="corridos" type="button">Dias corridos</button></div></div>
+        <div class="chartbox"><canvas id="chMes" role="img" aria-label="Ausências por mês e setor"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div><h3 class="section-title">Pontos de atenção</h3><p class="section-desc">Alertas gerados a partir das regras e da cobertura de cada setor.</p></div></div>
+        <div class="stack" id="alerts"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LINHA DO TEMPO ================= -->
+  <section class="view" id="v-linha" hidden>
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head">
+        <div><h3 class="section-title">Linha do tempo das férias</h3><p class="section-desc">Barras por período, agrupadas por setor. Clique em um nome ou em uma barra para abrir a ficha. Faixas douradas marcam feriados e pontos facultativos; contorno vermelho indica sobreposição com colega do mesmo setor.</p></div>
+        <div class="gtools">
+          <div class="toggle" id="gZoom"><button data-v="ano" class="active" type="button">Ano</button><button data-v="tri" type="button">Trimestre</button><button data-v="mes" type="button">Mês</button></div>
+          <div class="gnav" id="gNav"><button class="btn btn-ghost btn-icon btn-sm" id="gPrev" type="button" aria-label="Anterior">‹</button><span class="gperiod" id="gPeriod">—</span><button class="btn btn-ghost btn-icon btn-sm" id="gNext" type="button" aria-label="Próximo">›</button><button class="btn btn-ghost btn-sm" id="gToday" type="button">Hoje</button></div>
+        </div>
+      </div>
+      <div class="legend" style="margin-top:6px">
+        <span><i class="sw" style="background:var(--st-done)"></i>Concluída</span>
+        <span><i class="sw" style="background:var(--st-gozo)"></i>Em gozo</span>
+        <span><i class="sw" style="background:var(--st-prog)"></i>Programada</span>
+        <span><i class="sw" style="background:var(--card);box-shadow:inset 0 0 0 2px var(--danger)"></i>Sobreposição no setor</span>
+        <span><i class="sw" style="background:var(--hol)"></i>Feriado / ponto facultativo</span>
+        <span><i class="sw" style="background:var(--danger);width:3px"></i>Hoje</span>
+      </div>
+      <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div><h3 class="section-title">Cobertura semanal por setor</h3><p class="section-desc">Pico de servidores ausentes em cada semana, em relação ao tamanho do setor. O número dentro da célula é a quantidade de pessoas fora.</p></div>
+        <div class="scale" id="heatScale"></div>
+      </div>
+      <div class="heat-scroll"><div class="heat" id="heat"></div></div>
+    </div>
+  </section>
+
+  <!-- ================= CALENDÁRIO ================= -->
+  <section class="view" id="v-calendario" hidden>
+    <div class="cal-wrap">
+      <div class="panel">
+        <div class="cal-head">
+          <div class="cal-title" id="calTitle">—</div>
+          <div class="gnav"><button class="btn btn-ghost btn-icon btn-sm" id="cPrev" type="button" aria-label="Mês anterior">‹</button><button class="btn btn-ghost btn-sm" id="cToday" type="button">Hoje</button><button class="btn btn-ghost btn-icon btn-sm" id="cNext" type="button" aria-label="Próximo mês">›</button></div>
+        </div>
+        <div class="legend" style="margin-bottom:10px" id="calLegend"></div>
+        <div class="cal" id="cal"></div>
+      </div>
+      <div class="panel">
+        <h3 class="section-title" id="dayTitle">—</h3>
+        <p class="section-desc" id="daySub">—</p>
+        <div class="daylist" id="dayList"></div>
+        <h3 class="section-title" style="margin-top:20px">Resumo do mês</h3>
+        <div class="stack" id="monthSum"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EQUIPE ================= -->
+  <section class="view" id="v-equipe" hidden>
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head">
+        <div><h3 class="section-title">Equipe e saldo de férias</h3><p class="section-desc">Cada anel mostra os 30 dias do exercício: cinza já gozado, azul programado a gozar e vermelho ainda sem data.</p></div>
+        <div class="team-tools">
+          <select class="fctl" id="teamSort" aria-label="Ordenar"><option value="saldo">Ordenar: maior saldo</option><option value="prox">Ordenar: próxima saída</option><option value="nome">Ordenar: nome</option><option value="setor">Ordenar: setor</option></select>
+          <div class="toggle" id="teamMode"><button class="active" data-v="cards" type="button">Cartões</button><button data-v="tabela" type="button">Tabela</button><button data-v="periodos" type="button">Períodos</button></div>
+        </div>
+      </div>
+      <div id="teamOut" style="margin-top:10px"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div><h3 class="section-title">Composição do saldo por servidor</h3><p class="section-desc">Dias gozados, programados a gozar e a programar, em dias corridos.</p></div></div>
+      <div class="chartbox" id="saldoBox" style="height:420px"><canvas id="chSaldo" role="img" aria-label="Saldo por servidor"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ================= SIMULADOR ================= -->
+  <section class="view" id="v-simulador" hidden>
+    <div class="panel" style="margin-bottom:18px">
+      <div class="panel-head"><div><h3 class="section-title">Simular um novo período de férias</h3><p class="section-desc">Teste uma data antes de lançar no SIGEPE: o painel calcula os dias úteis consumidos, confere as regras e mostra quem do setor estaria fora ao mesmo tempo. Nada é gravado na base.</p></div></div>
+      <div class="sim-form">
+        <div class="ff"><label for="sServ">Servidor</label><select class="fctl" id="sServ"></select></div>
+        <div class="ff"><label for="sIni">Início</label><input class="fctl" type="date" id="sIni"></div>
+        <div class="ff"><label for="sDias">Dias corridos</label><input class="fctl" type="number" id="sDias" min="1" max="30" value="15"></div>
+        <div class="ff"><label>Fim calculado</label><div class="fctl" id="sFim" style="display:flex;align-items:center;background:var(--muted-fill)">—</div></div>
+      </div>
+      <div class="sim-kpis" id="simKpis"></div>
+    </div>
+    <div class="grid g-2">
+      <div class="panel">
+        <h3 class="section-title">Conferência de regras</h3>
+        <p class="section-desc">Lei 8.112/90, art. 77, e cobertura do setor.</p>
+        <div class="checks" id="simChecks"></div>
+        <h3 class="section-title" style="margin-top:18px">Setor no período simulado</h3>
+        <p class="section-desc">Período simulado em verde listrado, junto com os colegas do mesmo setor.</p>
+        <div id="simTl"></div>
+      </div>
+      <div class="panel">
+        <h3 class="section-title">Melhores janelas</h3>
+        <p class="section-desc" id="suggDesc">Datas de início com menos conflitos no setor e menor consumo de dias úteis até o fim do exercício. Clique para aplicar.</p>
+        <div class="sugg" id="sugg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUALIDADE ================= -->
+  <section class="view" id="v-qualidade" hidden>
+    <div class="panel" style="margin-bottom:18px">
+      <div class="q-hero">
+        <div id="qRing"></div>
+        <div>
+          <h3 class="section-title">Índice de qualidade da base</h3>
+          <p class="section-desc">Percentual de verificações atendidas, considerando completude cadastral, consistência das datas e aderência às regras de férias para cada servidor.</p>
+          <div class="q-stats" id="qStats"></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid g-12">
+      <div class="panel">
+        <h3 class="section-title">Regras verificadas</h3>
+        <p class="section-desc">Cada regra é aplicada servidor a servidor. Clique em um nome para abrir a ficha.</p>
+        <div id="rules"></div>
+      </div>
+      <div class="panel">
+        <h3 class="section-title">Matriz de conformidade</h3>
+        <p class="section-desc">✓ atende · ! atenção · ✕ não atende · – não se aplica</p>
+        <div class="matrix-scroll"><table class="mx" id="matrix"></table></div>
+      </div>
+    </div>
+    <div class="grid g-2">
+      <div class="panel">
+        <h3 class="section-title">Problemas encontrados na planilha de origem</h3>
+        <p class="section-desc">Estruturais: afetam somas, filtros e a leitura por outras ferramentas (Power BI, Power Query). O painel contorna todos, mas vale corrigir na fonte.</p>
+        <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel">
+        <h3 class="section-title">Premissas e fontes</h3>
+        <ul class="sources" id="sources">
+          <li>Direito de 30 dias por exercício, parcelamento em até 3 etapas e acúmulo de até 2 períodos: <a href="https://www.planalto.gov.br/ccivil_03/leis/l8112cons.htm" target="_blank" rel="noopener">Lei 8.112/1990, art. 77</a>. Resumo das regras e da ON SRH/MP nº 2/2011: <a href="https://www.ufmg.br/prorh/wp-content/uploads/2023/05/fer.pdf" target="_blank" rel="noopener">guia de férias da UFMG</a>.</li>
+          <li>Feriados nacionais e pontos facultativos de 2026: Portaria MGI nº 11.460/2025, conforme divulgado em <a href="https://www.congressoemfoco.com.br/noticia/115211/governo-divulga-feriados-nacionais-e-pontos-facultativos-de-2026" target="_blank" rel="noopener">Congresso em Foco</a>. Meio expediente (Cinzas, 24/12 e 31/12) conta como dia útil.</li>
+          <li>Feriados estaduais e municipais não estão incluídos, porque a planilha não informa a cidade de lotação. Se a unidade fica em Recife, por exemplo, datas locais reduziriam ainda mais os dias úteis.</li>
+          <li>Regras da CLT (uma parcela de no mínimo 14 dias, demais de no mínimo 5, início fora dos 2 dias antes de feriado ou repouso) só valem para empregado público celetista: <a href="https://www.planalto.gov.br/ccivil_03/decreto-lei/del5452.htm" target="_blank" rel="noopener">CLT, art. 134</a>. A planilha não indica o regime de cada pessoa, então essas verificações aparecem apenas como informação.</li>
+          <li>A situação (programada, em gozo, concluída) é recalculada pela data do dispositivo de quem abre o painel.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <span>Painel de consulta interna · Acompanhamento de férias · dados fictícios</span>
+    <span id="footCount">—</span>
+  </div>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Ficha do servidor" aria-hidden="true">
+  <div class="dr-head" id="drHead"></div>
+  <div class="dr-body" id="drBody"></div>
+</aside>
+<div class="tip" id="tip"></div>
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="uploadModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head">
+      <div><h3 id="mTitle">Atualizar base de férias</h3>
+        <p>Envie a planilha de acompanhamento (.xlsx) no layout atual. O arquivo é lido no seu navegador e não é enviado para nenhum servidor.</p></div>
+      <button class="dr-close" id="closeUploadBtn" type="button" aria-label="Fechar">&times;</button>
+    </div>
+    <div class="dropzone" id="dropzone" role="button" tabindex="0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div><b>Clique para selecionar</b> ou arraste o arquivo .xlsx aqui</div>
+      <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+    </div>
+    <div class="file-req">O painel procura a linha de cabeçalho com <b>SIAPE</b> e reconhece cada período pelas colunas <b>Início</b> e <b>Fim das Férias/Licença</b>, em qualquer ordem. As colunas de situação e dias são recalculadas, então os erros de fórmula da planilha não afetam o painel.</div>
+    <div class="upload-status" id="uploadStatus" hidden></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-sm" id="resetBtn" type="button">Restaurar base original</button>
+      <button class="btn btn-primary btn-sm" id="cancelUploadBtn" type="button">Concluir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   DADOS
+   ========================================================= */
+const BASE_ORIGINAL = [{"siape":"9000101","nome":"Ana Paula Ribeiro","coord":"COEX","setorOrig":"CONTRATOS","periodos":[{"ini":"2026-01-12","fim":"2026-01-26","tipo":"FÉRIAS","slot":1},{"ini":"2026-07-06","fim":"2026-07-20","tipo":"FÉRIAS","slot":2}],"linha":4},{"siape":"9000102","nome":"Bruno Tavares","coord":"COEX","setorOrig":"CONTRATOS","periodos":[{"ini":"2026-03-02","fim":"2026-03-11","tipo":"FÉRIAS","slot":1},{"ini":"2026-10-13","fim":"2026-10-22","tipo":"FÉRIAS","slot":2},{"ini":"2026-12-14","fim":"2026-12-23","tipo":"FÉRIAS","slot":3}],"linha":5},{"siape":"9000103","nome":"Camila Ferraz","coord":"COEX","setorOrig":"CONTRATOS","periodos":[{"ini":"2026-05-04","fim":"2026-05-18","tipo":"FÉRIAS","slot":1}],"linha":6},{"siape":"9000104","nome":"Diego Monteiro","coord":"COEX","setorOrig":"CONTRATOS","periodos":[{"ini":"2026-02-09","fim":"2026-02-13","tipo":"FÉRIAS","slot":1},{"ini":"2026-10-05","fim":"2026-10-19","tipo":"FÉRIAS","slot":2}],"linha":7},{"siape":null,"nome":"Eduarda Lins","coord":"COEX","setorOrig":"CONTRATOS","periodos":[],"linha":8},{"siape":"9000106","nome":"Fábio Cardoso","coord":"COEX","setorOrig":"CONTRATOS","periodos":[{"ini":"2026-11-03","fim":"2026-11-17","tipo":"FÉRIAS","slot":1},{"ini":"2026-12-21","fim":"2027-01-04","tipo":"FÉRIAS","slot":2}],"linha":9},{"siape":"9000107","nome":"Gabriela Nóbrega","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-04-06","fim":"2026-04-20","tipo":"FÉRIAS","slot":1},{"ini":"2026-09-14","fim":"2026-09-28","tipo":"FÉRIAS","slot":2}],"linha":10},{"siape":"9000108","nome":"Igor Vasconcelos","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-06-01","fim":"2026-06-03","tipo":"FÉRIAS","slot":1},{"ini":"2026-10-26","fim":"2026-11-09","tipo":"FÉRIAS","slot":2}],"linha":11},{"siape":"9000109","nome":"Juliana Barros","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-10-19","fim":"2026-11-02","tipo":"FÉRIAS","slot":1},{"ini":"2026-11-16","fim":"2026-11-30","tipo":"FÉRIAS","slot":2}],"linha":12},{"siape":"9000110","nome":"Leonardo Pires","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-01-05","fim":"2026-01-19","tipo":"FÉRIAS","slot":1},{"ini":"2026-08-03","fim":"2026-08-12","tipo":"FÉRIAS","slot":2},{"ini":"2026-11-23","fim":"2026-12-06","tipo":"FÉRIAS","slot":3}],"linha":13},{"siape":"9000111","nome":"Marina Quintela","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-07-13","fim":"2026-07-27","tipo":"FÉRIAS","slot":1}],"linha":14},{"siape":"9000112","nome":"Otávio Rangel","coord":"COEX","setorOrig":"LICITAÇÕES","periodos":[{"ini":"2026-02-23","fim":"2026-03-09","tipo":"FÉRIAS","slot":1},{"ini":"2026-09-01","fim":"2026-09-15","tipo":"FÉRIAS","slot":2}],"linha":15},{"siape":"9000113","nome":"Patrícia Moura","coord":"COEX","setorOrig":"Coordenador de Licitações e Contratos","periodos":[{"ini":"2026-01-19","fim":"2026-02-02","tipo":"FÉRIAS","slot":1},{"ini":"2026-11-09","fim":"2026-11-23","tipo":"FÉRIAS","slot":2}],"linha":16},{"siape":null,"nome":"Renato Siqueira","coord":"COEX","setorOrig":"Coordenadora Substituta de Licitações e Contratos","periodos":[{"ini":"2026-11-16","fim":"2026-11-25","tipo":"FÉRIAS","slot":1}],"linha":17}];
+const ORIGEM_PADRAO = 'Acompanhamento de Ferias - Exemplo.xlsx';
+const DIREITO = 30, MAX_ETAPAS = 3;
+/* Portaria MGI nº 11.460/2025 — F: feriado · P: ponto facultativo (dia inteiro) · M: meio expediente (conta como útil) */
+const FERIADOS = [
+  ['2026-01-01','F','Confraternização Universal'],['2026-02-16','P','Carnaval'],['2026-02-17','P','Carnaval'],['2026-02-18','M','Quarta-feira de Cinzas (até 14h)'],
+  ['2026-04-03','F','Paixão de Cristo'],['2026-04-20','P','Ponto facultativo'],['2026-04-21','F','Tiradentes'],['2026-05-01','F','Dia do Trabalho'],
+  ['2026-06-04','P','Corpus Christi'],['2026-06-05','P','Ponto facultativo'],['2026-09-07','F','Independência do Brasil'],['2026-10-12','F','Nossa Senhora Aparecida'],
+  ['2026-10-28','P','Dia do Servidor Público'],['2026-11-02','F','Finados'],['2026-11-15','F','Proclamação da República'],['2026-11-20','F','Consciência Negra'],
+  ['2026-12-24','M','Véspera de Natal (após 13h)'],['2026-12-25','F','Natal'],['2026-12-31','M','Véspera de Ano Novo (após 13h)'],['2027-01-01','F','Confraternização Universal']
+];
+const HOL = Object.fromEntries(FERIADOS.map(([d,t,n]) => [d,{t,n}]));
+const HOL_TIPO = {F:'Feriado nacional', P:'Ponto facultativo', M:'Meio expediente'};
+const SETORES = [
+  {key:'CONTRATOS', label:'Contratos', c:'--sec-1'},
+  {key:'LICITAÇÕES', label:'Licitações', c:'--sec-2'},
+  {key:'COORDENAÇÃO', label:'Coordenação', c:'--sec-3'}
+];
+const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MES_L = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DOW = ['dom','seg','ter','qua','qui','sex','sáb'];
+const DAY = 86400000;
+const SIT_LBL = {programada:'Programada', gozo:'Em gozo', concluida:'Concluída'};
+const SIT_B = {programada:'b-blue', gozo:'b-yellow', concluida:'b-gray'};
+
+/* =========================================================
+   UTILITÁRIOS
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); })();
+const parseD = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const addD = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate()+n);
+const fmt = d => `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+const fmtS = d => `${String(d.getDate()).padStart(2,'0')} ${MES[d.getMonth()]}`;
+const fmtSY = d => `${fmtS(d)}${d.getFullYear()!==today.getFullYear()?' '+d.getFullYear():''}`;
+const diffD = (a,b) => Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate()) - Date.UTC(a.getFullYear(),a.getMonth(),a.getDate())) / DAY);
+const mkey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+const monthStart = d => new Date(d.getFullYear(), d.getMonth(), 1);
+const monthEnd = d => new Date(d.getFullYear(), d.getMonth()+1, 0);
+const plural = (n, s, p) => `${n} ${n===1?s:p}`;
+const LOWER = ['de','da','do','dos','das','e'];
+const titleCase = s => String(s).toLowerCase().split(/\s+/).map((w,i) => (i>0 && LOWER.includes(w)) ? w : w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+const shortName = n => { const p = titleCase(n).split(' ').filter(w => !LOWER.includes(w)); return p.length > 1 ? `${p[0]} ${p[p.length-1]}` : p[0]; };
+const initials = n => { const p = titleCase(n).split(' ').filter(w => !LOWER.includes(w)); return (p[0][0] + (p.length>1 ? p[p.length-1][0] : '')).toUpperCase(); };
+const isWeekend = d => d.getDay() === 0 || d.getDay() === 6;
+const isUtil = d => !isWeekend(d) && !(HOL[iso(d)] && HOL[iso(d)].t !== 'M');
+function diasUteis(a, b){ let n = 0; for (let d = new Date(a); d <= b; d = addD(d,1)) if (isUtil(d)) n++; return n; }
+function feriadosEntre(a, b){ const out = []; for (let d = new Date(a); d <= b; d = addD(d,1)){ const h = HOL[iso(d)]; if (h && !isWeekend(d)) out.push({d:new Date(d), ...h}); } return out; }
+const setorOf = k => SETORES.find(s => s.key === k) || {key:k, label:titleCase(k||'Não informado'), c:'--slate'};
+const overlap = (a1,b1,a2,b2) => a1 <= b2 && a2 <= b1;
+
+/* =========================================================
+   MODELO
+   ========================================================= */
+let SERV = [], ORIGEM = ORIGEM_PADRAO, RAW_ISSUES = [];
+const ST = { setor:'', serv:'', sit:'', q:'', view:'geral', mesMode:'uteis', gZoom:'ano', gAnchor:monthStart(today), calMonth:monthStart(today), calDay:new Date(today), teamSort:'saldo', teamMode:'cards', sort:{k:'nome',d:1} };
+let charts = {};
+
+function normSetor(s){
+  const u = String(s||'').toUpperCase();
+  if (u.includes('COORDENADOR')) return {setor:'COORDENAÇÃO', cargo:titleCase(String(s)).replace('Licitações e Contratos','Licitações e Contratos')};
+  if (u.includes('LICIT')) return {setor:'LICITAÇÕES', cargo:''};
+  if (u.includes('CONTRAT')) return {setor:'CONTRATOS', cargo:''};
+  return {setor:u || 'NÃO INFORMADO', cargo:''};
+}
+function situacao(ini, fim){ return today < ini ? 'programada' : (today > fim ? 'concluida' : 'gozo'); }
+
+function build(base){
+  SERV = base.map((s, i) => {
+    const ns = normSetor(s.setorOrig);
+    const periodos = s.periodos.map(p => {
+      const ini = parseD(p.ini), fim = parseD(p.fim);
+      const corridos = diffD(ini, fim) + 1;
+      const sit = situacao(ini, fim);
+      const gozados = sit === 'concluida' ? corridos : (sit === 'gozo' ? diffD(ini, today) + 1 : 0);
+      return {ini, fim, corridos, uteis:diasUteis(ini, fim), fer:feriadosEntre(ini, fim), sit, gozados, tipo:titleCase(p.tipo || 'Férias'), conf:[], slot:p.slot||0};
+    }).sort((a,b) => a.ini - b.ini);
+    periodos.forEach((p,j) => p.n = j+1);
+    const prog = periodos.reduce((a,p) => a+p.corridos, 0);
+    const goz = periodos.reduce((a,p) => a+p.gozados, 0);
+    const uteis = periodos.reduce((a,p) => a+p.uteis, 0);
+    return { id:i, siape:s.siape, nome:s.nome, nomeT:titleCase(s.nome), curto:shortName(s.nome), ini:initials(s.nome), coord:s.coord || 'COEX',
+      setor:ns.setor, cargo:ns.cargo, setorOrig:s.setorOrig, periodos, prog, goz, uteis, aGozar:prog-goz, saldo:Math.max(0, DIREITO-prog), excesso:Math.max(0, prog-DIREITO), linha:s.linha };
+  });
+  SERV.forEach(a => a.periodos.forEach(pa => SERV.forEach(b => {
+    if (a === b || a.setor !== b.setor) return;
+    b.periodos.forEach(pb => { if (overlap(pa.ini, pa.fim, pb.ini, pb.fim)) pa.conf.push({s:b, p:pb}); });
+  })));
+  SERV.forEach(s => { s.rules = regras(s); });
+}
+
+/* ---------- regras de qualidade por servidor ---------- */
+const RULES = [
+  {id:'siape', t:'SIAPE preenchido', basis:'Identificação única do servidor (cadastro SIAPE).', fix:'Preencher a matrícula SIAPE na coluna A.'},
+  {id:'setor', t:'Setor padronizado', basis:'A coluna Setor deve conter a unidade, não o cargo.', fix:'Mover o cargo para uma coluna própria e informar o setor.'},
+  {id:'datas', t:'Datas válidas', basis:'Fim igual ou posterior ao início, nos três períodos.', fix:'Conferir as datas de início e fim.'},
+  {id:'sobrep', t:'Períodos do próprio servidor sem sobreposição', basis:'Um servidor não pode ter dois períodos no mesmo dia.', fix:'Ajustar as datas que se sobrepõem.'},
+  {id:'etapas', t:'Até 3 etapas', basis:'Lei 8.112/1990, art. 77, § 3º.', fix:'Reagrupar os períodos em no máximo três.'},
+  {id:'limite', t:'Até 30 dias no exercício', basis:'Lei 8.112/1990, art. 77 (acúmulo só por necessidade do serviço, até 2 períodos).', fix:'Conferir se há acúmulo de exercício anterior documentado.'},
+  {id:'completa', t:'30 dias com data definida', basis:'Programação anual completa do exercício.', fix:'Programar o saldo restante com a chefia.'},
+  {id:'exercicio', t:'Gozo dentro do ano civil', basis:'Períodos no ano seguinte caracterizam acúmulo ou reprogramação.', fix:'Confirmar a qual exercício o período pertence.'},
+  {id:'clt', t:'Regras da CLT (se empregado público)', basis:'CLT, art. 134, §§ 1º e 3º. Informativo: a planilha não indica o regime.', fix:'Confirmar o regime; se CLT, ajustar parcelas e data de início.', info:true}
+];
+function regras(s){
+  const r = {};
+  const ano = s.periodos.length ? s.periodos[0].ini.getFullYear() : today.getFullYear();
+  r.siape = s.siape ? {st:'ok'} : {st:'crit', msg:'SIAPE ausente (preenchido com "-")'};
+  r.setor = s.cargo ? {st:'warn', msg:`Setor registrado como cargo: "${titleCase(s.setorOrig)}"`} : {st:'ok'};
+  r.datas = s.periodos.every(p => p.fim >= p.ini) ? {st:'ok'} : {st:'crit', msg:'Data de fim anterior ao início'};
+  let sob = false; for (let i=1;i<s.periodos.length;i++) if (s.periodos[i].ini <= s.periodos[i-1].fim) sob = true;
+  r.sobrep = sob ? {st:'crit', msg:'Períodos que se sobrepõem'} : {st:'ok'};
+  r.etapas = s.periodos.length > MAX_ETAPAS ? {st:'crit', msg:`${s.periodos.length} etapas`} : (s.periodos.length ? {st:'ok', msg:plural(s.periodos.length,'etapa','etapas')} : {st:'na'});
+  r.limite = s.prog > DIREITO ? {st:'crit', msg:`${s.prog} dias programados`} : (s.prog ? {st:'ok'} : {st:'na'});
+  r.completa = s.prog >= DIREITO ? {st:'ok'} : (s.prog === 0 ? {st:'crit', msg:`Nenhum período programado (${DIREITO} dias sem data)`} : {st:'warn', msg:`${s.saldo} dias sem data`});
+  const fora = s.periodos.filter(p => p.fim.getFullYear() > ano);
+  r.exercicio = fora.length ? {st:'warn', msg:`Período em ${fora.map(p=>fmt(p.ini)).join(', ')}`} : (s.periodos.length ? {st:'ok'} : {st:'na'});
+  if (!s.periodos.length) r.clt = {st:'na'};
+  else {
+    const probs = [];
+    if (!s.periodos.some(p => p.corridos >= 14)) probs.push('nenhuma parcela com 14 dias ou mais');
+    const curtas = s.periodos.filter(p => p.corridos < 5); if (curtas.length) probs.push(`parcela de ${curtas.map(p=>p.corridos).join(', ')} dia(s), abaixo de 5`);
+    const ruins = s.periodos.filter(p => { for (let k=1;k<=2;k++){ const d = addD(p.ini,k); if (d.getDay()===0 || (HOL[iso(d)] && HOL[iso(d)].t==='F')) return true; } return false; });
+    if (ruins.length) probs.push(`início em ${ruins.map(p=>`${fmt(p.ini)} (${DOW[p.ini.getDay()]})`).join(', ')}, até 2 dias antes de repouso ou feriado`);
+    r.clt = probs.length ? {st:'warn', msg:'Se CLT: ' + probs.join('; ')} : {st:'ok'};
+  }
+  return r;
+}
+
+function rawIssues(base){
+  const n = base.length;
+  const vazios2 = base.filter(s => !s.periodos.some(p => p.slot===2)).length;
+  const vazios3 = base.filter(s => !s.periodos.some(p => p.slot===3)).length;
+  const semS = base.filter(s => !s.siape).length;
+  const cargo = base.filter(s => /coordenador/i.test(s.setorOrig||'')).length;
+  return [
+    {ref:'M e S', t:`Situação "Concluída" em períodos vazios (${vazios2 + vazios3} células)`, d:'A fórmula =SE(HOJE()<J4;…) compara a data de hoje com uma célula vazia, que vale zero. Sugestão: =SE(J4="";"Não programado";SE(HOJE()<J4;"Programada";SE(HOJE()<=K4;"Em gozo";"Concluída"))).'},
+    {ref:'L e Q', t:`Texto "Não programado" na coluna de dias (${vazios2 + vazios3} células)`, d:'A coluna Dias Consumidos mistura número e texto, o que quebra somas e médias. Sugestão: deixar vazio ou 0 e exibir o texto só na coluna Situação.'},
+    {ref:'R:S', t:'Ordem das colunas invertida no 3º período', d:'Nos dois primeiros períodos a ordem é Situação, Tipo; no terceiro é Tipo, Situação. Isso confunde a leitura e qualquer importação por posição.'},
+    {ref:'D', t:`Cargo registrado na coluna Setor (${cargo} linhas)`, d:'"Coordenador(a) de Licitações e Contratos" aparece no lugar do setor. O painel agrupa essas linhas como Coordenação.'},
+    {ref:'A', t:`SIAPE com "-" (${semS} linhas)`, d:'Sem a matrícula não é possível cruzar com o SIAPE/SIGEPE nem garantir unicidade.'},
+    {ref:'A1:S2', t:'Células mescladas no cabeçalho', d:'O cabeçalho em duas linhas mescladas dificulta a importação automática (Power Query, pandas). Sugestão: uma linha de cabeçalho com nomes únicos, como "P1 Início", "P1 Fim".'},
+    {ref:'Layout', t:'Formato "largo" (um bloco de colunas por período)', d:`Cada período ocupa 5 colunas. Um formato longo, com uma linha por período, facilita filtros, somas e o Power BI. A base tratada que acompanha o painel já vem nesse formato.`}
+  ];
+}
+
+/* =========================================================
+   FILTROS
+   ========================================================= */
+function passaServ(s){
+  if (ST.setor && s.setor !== ST.setor) return false;
+  if (ST.serv && String(s.id) !== ST.serv) return false;
+  if (ST.q){ const q = ST.q.toLowerCase(); if (!(s.nome.toLowerCase().includes(q) || s.nomeT.toLowerCase().includes(q) || String(s.siape||'').includes(q))) return false; }
+  if (ST.sit === 'saldo') return s.saldo > 0;
+  if (ST.sit) return s.periodos.some(p => p.sit === ST.sit);
+  return true;
+}
+const perVis = p => !ST.sit || ST.sit === 'saldo' || p.sit === ST.sit;
+const L = () => SERV.filter(passaServ);
+
+function initFilters(){
+  const opts = [{key:'',label:'Todos'}, ...SETORES.filter(st => SERV.some(s => s.setor === st.key))];
+  $('segSetor').innerHTML = opts.map(o => `<button type="button" data-v="${esc(o.key)}">${o.c?`<i style="background:var(${o.c})"></i>`:''}${esc(o.label)}</button>`).join('');
+  $('segSetor').querySelectorAll('button').forEach(b => b.onclick = () => { ST.setor = b.dataset.v; renderAll(); });
+  const sorted = [...SERV].sort((a,b) => a.nome.localeCompare(b.nome));
+  $('fServ').innerHTML = '<option value="">Todos os servidores</option>' + sorted.map(s => `<option value="${s.id}">${esc(s.nomeT)}</option>`).join('');
+  $('sServ').innerHTML = sorted.map(s => `<option value="${s.id}">${esc(s.nomeT)}${s.saldo?` · saldo ${s.saldo}d`:''}</option>`).join('');
+  $('fServ').value = ST.serv; $('fSit').value = ST.sit; $('fQ').value = ST.q;
+}
+$('fServ').onchange = e => { ST.serv = e.target.value; renderAll(); };
+$('fSit').onchange = e => { ST.sit = e.target.value; renderAll(); };
+$('fQ').oninput = e => { ST.q = e.target.value.trim(); renderAll(); };
+$('clearBtn').onclick = () => { Object.assign(ST, {setor:'',serv:'',sit:'',q:''}); $('fServ').value=''; $('fSit').value=''; $('fQ').value=''; renderAll(); };
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !/input|select|textarea/i.test(document.activeElement.tagName)){ e.preventDefault(); $('fQ').focus(); }
+  if (e.key === 'Escape'){ closeDrawer(); $('uploadModal').classList.remove('open'); }
+});
+
+/* =========================================================
+   NAVEGAÇÃO ENTRE VISÕES
+   ========================================================= */
+const VIEWS = ['geral','linha','calendario','equipe','simulador','qualidade'];
+function setView(v, push=true){
+  if (!VIEWS.includes(v)) v = 'geral';
+  ST.view = v;
+  document.querySelectorAll('.vtab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  VIEWS.forEach(x => $('v-'+x).hidden = x !== v);
+  if (push){ try { history.replaceState(null,'','#'+v); } catch(e){} }
+  renderView();
+}
+document.querySelectorAll('.vtab').forEach(b => b.onclick = () => setView(b.dataset.view));
+
+/* =========================================================
+   COMPONENTES
+   ========================================================= */
+function ring(segs, size=64, stroke=8, center='', sub=''){
+  const r = (size-stroke)/2, C = 2*Math.PI*r; let off = 0;
+  const total = segs.reduce((a,s)=>a+s.v,0) || 1;
+  const arcs = segs.filter(s=>s.v>0).map(s => { const len = s.v/total*C; const gap = segs.filter(x=>x.v>0).length>1 ? 1.5 : 0;
+    const el = `<circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(${s.c})" stroke-width="${stroke}" stroke-dasharray="${Math.max(len-gap,0)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 ${size/2} ${size/2})"/>`; off += len; return el; }).join('');
+  return `<svg class="ring" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--grid)" stroke-width="${stroke}"/>${arcs}${center?`<text x="50%" y="${sub?size/2+1:size/2+5}" text-anchor="middle" font-family="Sora,Inter,sans-serif" font-weight="700" font-size="${size>90?24:14}" fill="var(--ink)">${center}</text>`:''}${sub?`<text x="50%" y="${size/2+16}" text-anchor="middle" font-family="Inter,sans-serif" font-weight="600" font-size="9.5" fill="var(--slate)">${sub}</text>`:''}</svg>`;
+}
+const sectag = s => { const st = setorOf(s.setor); return `<span class="sectag"><i style="background:var(${st.c})"></i>${esc(s.cargo ? s.cargo.replace(' de Licitações e Contratos','') : st.label)}</span>`; };
+const avatar = (s, size=34) => `<span class="avatar" style="background:var(${setorOf(s.setor).c});width:${size}px;height:${size}px;font-size:${size*.36}px">${esc(s.ini)}</span>`;
+function statusServ(s){
+  const g = s.periodos.find(p => p.sit === 'gozo'); if (g) return {txt:`Em gozo até ${fmtS(g.fim)}`, cls:'b-yellow', ord:0};
+  const f = s.periodos.find(p => p.sit === 'programada'); if (f){ const d = diffD(today, f.ini); return {txt:`Sai em ${plural(d,'dia','dias')}`, cls:d<=30?'b-blue':'b-gray', ord:1, d}; }
+  if (s.prog === 0) return {txt:'Sem programação', cls:'b-red', ord:2};
+  if (s.saldo > 0) return {txt:`${s.saldo} dias sem data`, cls:'b-red', ord:3};
+  return {txt:'Ciclo concluído', cls:'b-green', ord:4};
+}
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('show'), 2200); }
+
+/* =========================================================
+   RANGE GLOBAL
+   ========================================================= */
+function dataRange(){
+  let a = null, b = null;
+  SERV.forEach(s => s.periodos.forEach(p => { if (!a || p.ini < a) a = p.ini; if (!b || p.fim > b) b = p.fim; }));
+  if (!a){ a = new Date(today.getFullYear(),0,1); b = new Date(today.getFullYear(),11,31); }
+  a = monthStart(a < today ? a : today); b = monthEnd(b > today ? b : today);
+  return {a, b};
+}
+
+/* =========================================================
+   VISÃO GERAL
+   ========================================================= */
+function renderKPIs(F){
+  const n = F.length, direito = n*DIREITO;
+  const prog = F.reduce((a,s)=>a+s.prog,0), goz = F.reduce((a,s)=>a+s.goz,0), saldo = F.reduce((a,s)=>a+s.saldo,0);
+  const emGozo = F.filter(s => s.periodos.some(p => p.sit==='gozo'));
+  const lim = addD(today, 30); const prox = []; F.forEach(s => s.periodos.forEach(p => { if (p.ini > today && p.ini <= lim) prox.push({s,p}); })); prox.sort((a,b)=>a.p.ini-b.p.ini);
+  const semProg = F.filter(s=>s.prog===0).length, parc = F.filter(s=>s.prog>0 && s.saldo>0).length;
+  const q = qualityScore(F);
+  const bySet = SETORES.map(st => [st.label, F.filter(s=>s.setor===st.key).length]).filter(x=>x[1]);
+  const pct = direito ? Math.round((direito-saldo)/direito*100) : 0;
+  $('kpis').innerHTML = `
+    <button class="kpi" type="button" data-go="equipe"><span class="kpi-label">Servidores</span><span class="kpi-value">${n}</span><span class="kpi-sub">${bySet.map(x=>`${x[1]} ${x[0].toLowerCase()}`).join(' · ') || '—'}</span></button>
+    <button class="kpi" type="button" data-go="equipe"><span class="kpi-label">Direito com data</span><span class="kpi-row">${ring([{v:goz,c:'--st-done'},{v:prog-goz,c:'--st-prog'},{v:saldo,c:'--st-saldo'}],54,7,pct+'%')}<span><span class="kpi-value" style="font-size:20px">${prog}<small>de ${direito} dias</small></span><span class="kpi-sub">${goz} já gozados</span></span></span></button>
+    <button class="kpi live" type="button" data-go="calendario"><span class="kpi-label"><span class="pulse"></span>Em gozo hoje</span><span class="kpi-value">${emGozo.length}</span><span class="kpi-sub">${emGozo.length ? emGozo.map(s=>{const p=s.periodos.find(p=>p.sit==='gozo'); return `${s.curto}, volta ${fmtS(addD(p.fim,1))}`;}).join(' · ') : 'Ninguém de férias hoje'}</span></button>
+    <button class="kpi" type="button" data-go="linha"><span class="kpi-label">Saídas em 30 dias</span><span class="kpi-value">${prox.length}</span><span class="kpi-sub">${prox.length ? prox.map(x=>`${x.s.curto} em ${fmtS(x.p.ini)}`).join(' · ') : 'Nenhuma saída prevista'}</span></button>
+    <button class="kpi crit" type="button" data-go="simulador"><span class="kpi-label">⚠ Saldo a programar</span><span class="kpi-value">${saldo}<small>dias</small></span><span class="kpi-sub">${plural(semProg,'servidor','servidores')} sem nenhuma data · ${parc} com programação parcial</span></button>
+    <button class="kpi" type="button" data-go="qualidade"><span class="kpi-label">Qualidade da base</span><span class="kpi-row">${ring([{v:q.ok,c:'--agu-green'},{v:q.warn,c:'--warn'},{v:q.crit,c:'--danger'}],54,7,q.pct+'%')}<span class="kpi-sub">${plural(q.crit,'falha','falhas')} e ${plural(q.warn,'alerta','alertas')} em ${q.total} verificações</span></span></button>`;
+  $('kpis').querySelectorAll('[data-go]').forEach(b => b.onclick = () => { setView(b.dataset.go); window.scrollTo({top:0}); });
+}
+
+function insights(F){
+  const out = [];
+  const n = F.length; if (!n) return [{c:'info', t:'Nenhum servidor atende aos filtros atuais.'}];
+  const direito = n*DIREITO, saldo = F.reduce((a,s)=>a+s.saldo,0), prog = F.reduce((a,s)=>a+s.prog,0);
+  out.push({c: saldo ? 'warn':'ok', t:`<b>${Math.round(prog/direito*100)}% do direito de férias</b> da equipe já tem data (${prog} de ${direito} dias). Faltam <b>${saldo} dias</b> para programar até o fim do exercício.`});
+  const sem = F.filter(s=>s.prog===0);
+  if (sem.length) out.push({c:'crit', t:`<b>${sem.map(s=>s.curto).join(' e ')}</b> ${sem.length>1?'ainda não têm':'ainda não tem'} nenhum período marcado. Restam ${diffD(today,new Date(today.getFullYear(),11,31))} dias corridos (${diasUteis(addD(today,1), new Date(today.getFullYear(),11,31))} úteis) até 31/12.`});
+  // pior janela futura por setor
+  let pior = null;
+  SETORES.forEach(st => { const membros = SERV.filter(s=>s.setor===st.key); if (!membros.length) return; const vis = F.filter(s=>s.setor===st.key); if (!vis.length) return;
+    for (let d = new Date(today); d <= addD(today,180); d = addD(d,1)){ if (!isUtil(d)) continue; const fora = vis.filter(s=>s.periodos.some(p=>p.ini<=d && p.fim>=d)); const r = fora.length/membros.length;
+      if (fora.length >= 2 && (!pior || r > pior.r)) pior = {st, d:new Date(d), r, fora, total:membros.length}; } });
+  if (pior){ let fim = pior.d; while (true){ const nx = addD(fim,1); const c = pior.fora.every(s=>s.periodos.some(p=>p.ini<=nx && p.fim>=nx)); if (!c) break; fim = nx; }
+    out.push({c:'crit', t:`Maior desfalque previsto: <b>${pior.st.label}</b> com ${pior.fora.length} de ${pior.total} servidores fora (${Math.round(pior.r*100)}%) de ${fmtS(pior.d)} a ${fmtS(fim)}: ${pior.fora.map(s=>s.curto).join(' e ')}.`}); }
+  const coord = SERV.filter(s=>s.setor==='COORDENAÇÃO');
+  if (coord.length >= 2){ const c = coord[0].periodos.some(p=>p.conf.some(x=>coord.includes(x.s))); out.push({c:c?'crit':'ok', t: c ? 'Há dias em que coordenador e substituta estão de férias ao mesmo tempo.' : `<b>A coordenação fica sempre coberta</b>: os períodos de ${coord.map(s=>s.curto).join(' e ')} não coincidem em nenhum dia.`}); }
+  const uteis = F.reduce((a,s)=>a+s.uteis,0);
+  const ef = F.flatMap(s=>s.periodos.map(p=>({s,p,r:p.uteis/p.corridos}))).filter(x=>x.p.corridos>=5).sort((a,b)=>a.r-b.r)[0];
+  out.push({c:'info', t:`Os ${prog} dias corridos programados correspondem a <b>${uteis} dias úteis</b> de ausência${ef?`. O período com melhor aproveitamento é o de ${ef.s.curto} (${fmtS(ef.p.ini)} a ${fmtS(ef.p.fim)}): ${ef.p.corridos} dias de descanso por ${ef.p.uteis} úteis`:''}.`});
+  const q = qualityScore(F);
+  out.push({c: q.crit ? 'warn' : 'ok', t:`Qualidade da base em <b>${q.pct}%</b>: ${plural(q.crit,'falha','falhas')} (como SIAPE ausente e servidor sem programação) e ${plural(q.warn,'alerta','alertas')}. Veja a aba Qualidade dos dados.`});
+  return out;
+}
+function renderBrief(F){
+  const ins = insights(F);
+  const ICON = {crit:'!', warn:'!', ok:'✓', info:'i'};
+  $('brief').innerHTML = ins.map(i => `<li><span class="ic ${i.c}">${ICON[i.c]}</span><span>${i.t}</span></li>`).join('');
+  $('copyBrief').onclick = () => {
+    const txt = `Férias ${SERV[0]?.coord||'COEX'} — posição em ${fmt(today)}\n` + ins.map(i => '• ' + i.t.replace(/<[^>]+>/g,'')).join('\n');
+    const done = () => toast('Resumo copiado');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt));
+    else fallbackCopy(txt);
+  };
+}
+function fallbackCopy(txt){ const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast('Resumo copiado'); } catch(e){ toast('Selecione e copie o texto manualmente'); } ta.remove(); }
+
+function renderUpcoming(F){
+  const up = []; F.forEach(s => s.periodos.forEach(p => { if (p.fim >= today && perVis(p)) up.push({s,p}); }));
+  up.sort((a,b)=>a.p.ini-b.p.ini);
+  $('upcoming').innerHTML = up.length ? up.slice(0,7).map(({s,p}) => { const d = diffD(today,p.ini);
+    return `<button class="up-item" type="button" data-s="${s.id}"><span class="datebox"><b>${String(p.ini.getDate()).padStart(2,'0')}</b><span>${MES[p.ini.getMonth()]}${p.ini.getFullYear()!==today.getFullYear()?' '+String(p.ini.getFullYear()).slice(2):''}</span></span><span style="min-width:0"><span class="nm" style="display:block">${esc(s.nomeT)}</span><span class="sub">${p.corridos} dias corridos · ${p.uteis} úteis · volta ${fmtS(addD(p.fim,1))}</span></span><span>${p.sit==='gozo'?'<span class="badge b-yellow">em gozo</span>':`<span class="badge ${d<=30?'b-blue':'b-gray'}">em ${plural(d,'dia','dias')}</span>`}</span></button>`; }).join('') : '<div class="empty">Nenhuma saída futura no filtro.</div>';
+  $('upcoming').querySelectorAll('[data-s]').forEach(b => b.onclick = () => openDrawer(+b.dataset.s));
+}
+
+function alertsList(F){
+  const out = []; const ids = new Set(F.map(s=>s.id)); const seen = new Set();
+  F.forEach(s => s.periodos.forEach(p => p.conf.forEach(c => {
+    if (!ids.has(c.s.id)) return;
+    const i = p.ini > c.p.ini ? p.ini : c.p.ini, f = p.fim < c.p.fim ? p.fim : c.p.fim;
+    const key = [s.id, c.s.id].sort().join('-') + iso(i); if (seen.has(key)) return; seen.add(key);
+    const tot = SERV.filter(x=>x.setor===s.setor).length, fut = f >= today;
+    out.push({lvl:fut?'crit':'info', o:fut?0:4, t:`Sobreposição em ${setorOf(s.setor).label}${fut?'':' (já ocorrida)'}`, tag:fut?`<span class="badge b-red">${diasUteis(i,f)} dias úteis</span>`:'',
+      d:`${s.curto} e ${c.s.curto} fora juntos de ${fmt(i)} a ${fmt(f)}: 2 de ${tot} servidores do setor.`});
+  })));
+  const sem = F.filter(s=>s.prog===0);
+  if (sem.length) out.push({lvl:'crit', o:1, t:`${plural(sem.length,'servidor','servidores')} sem férias programadas`, tag:`<span class="badge b-red">${sem.length*DIREITO} dias</span>`, d:`${sem.map(s=>s.curto).join(', ')}. Use o Simulador para encontrar as melhores janelas.`});
+  const parc = F.filter(s=>s.prog>0 && s.saldo>0);
+  if (parc.length) out.push({lvl:'warn', o:2, t:'Programação parcial do direito', d:parc.map(s=>`${s.curto} (${s.saldo}d)`).join(', ') + ' ainda têm dias sem data.'});
+  const ex = F.filter(s=>s.rules.exercicio.st==='warn');
+  if (ex.length) out.push({lvl:'info', o:3, t:'Período no ano seguinte', d:ex.map(s=>`${s.curto}: ${s.rules.exercicio.msg.replace('Período em ','')}`).join('; ') + '. Confirmar o exercício de referência.'});
+  const coord = SERV.filter(s=>s.setor==='COORDENAÇÃO');
+  if (coord.length >= 2 && (!ST.setor || ST.setor==='COORDENAÇÃO')){ const c = coord[0].periodos.some(p=>p.conf.some(x=>coord.includes(x.s)));
+    out.push(c ? {lvl:'crit',o:0,t:'Coordenação descoberta',d:'Coordenador e substituta fora no mesmo período.'} : {lvl:'ok',o:5,t:'Coordenação sempre coberta',d:`Os períodos de ${coord.map(c=>c.curto).join(' e ')} não coincidem.`}); }
+  return out.sort((a,b)=>a.o-b.o);
+}
+function renderAlerts(F){
+  const a = alertsList(F);
+  $('alerts').innerHTML = a.length ? a.map(x => `<div class="al ${x.lvl}"><span class="stripe"></span><div><h4>${esc(x.t)} ${x.tag||''}</h4><p>${esc(x.d)}</p></div></div>`).join('') : '<div class="empty">Nenhum alerta para o filtro atual.</div>';
+}
+
+/* ---------- charts ---------- */
+function chartDefaults(){
+  Chart.defaults.font.family = "'Inter', system-ui, sans-serif"; Chart.defaults.font.size = 11;
+  Chart.defaults.color = css('--slate'); Chart.defaults.borderColor = css('--grid');
+}
+const tipStyle = () => ({ backgroundColor:css('--ink'), titleColor:css('--bg'), bodyColor:css('--bg'), footerColor:css('--bg'), padding:10, cornerRadius:10, boxPadding:4, usePointStyle:true });
+const legendCfg = () => ({position:'bottom', labels:{boxWidth:10, boxHeight:10, usePointStyle:true, pointStyle:'rectRounded', font:{size:11}, color:css('--slate')}});
+
+function renderAvail(F){
+  const R = dataRange(); const days = [];
+  for (let d = new Date(R.a); d <= R.b; d = addD(d,1)) if (isUtil(d)) days.push(new Date(d));
+  const n = F.length;
+  const vals = days.map(d => n - F.filter(s => s.periodos.some(p => perVis(p) && p.ini<=d && p.fim>=d)).length);
+  const tIdx = days.findIndex(d => d >= today);
+  let minV = Math.min(...vals), minIdx = vals.findIndex((v,i) => v === minV && days[i] >= today); if (minIdx < 0) minIdx = vals.indexOf(minV);
+  const prog = css('--st-prog'), dng = css('--danger');
+  const plug = { id:'marks', afterDatasetsDraw(c){ const {ctx, chartArea:{top,bottom}, scales:{x,y}} = c; ctx.save();
+      if (tIdx >= 0){ const px = x.getPixelForValue(tIdx); ctx.strokeStyle = dng; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px,top); ctx.lineTo(px,bottom); ctx.stroke();
+        ctx.fillStyle = dng; ctx.font = '700 10px Inter, sans-serif'; ctx.textAlign='center'; ctx.fillText('Hoje', px, top - 4); }
+      if (minIdx >= 0 && n){ const px = x.getPixelForValue(minIdx), py = y.getPixelForValue(vals[minIdx]); ctx.fillStyle = css('--card'); ctx.strokeStyle = prog; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = css('--ink'); ctx.font = '700 11px Inter, sans-serif'; ctx.textAlign = px > c.width*.55 ? 'right' : 'left'; ctx.fillText(`Menor equipe${minIdx>=tIdx?' prevista':''}: ${vals[minIdx]} de ${n} em ${fmtS(days[minIdx])}`, px + (ctx.textAlign==='left'?8:-8), py + 16); }
+      ctx.restore(); } };
+  charts.avail?.destroy();
+  charts.avail = new Chart($('chAvail'), { type:'line',
+    data:{ labels: days.map(d => fmtS(d)), datasets:[{ label:'Servidores disponíveis', data:vals, borderColor:prog, borderWidth:2, stepped:true, pointRadius:0, pointHoverRadius:5, pointHoverBackgroundColor:prog, pointHoverBorderColor:css('--card'), pointHoverBorderWidth:2,
+      fill:true, backgroundColor:(ctx) => { const {chart} = ctx; const {ctx:c, chartArea} = chart; if (!chartArea) return 'transparent'; const g = c.createLinearGradient(0,chartArea.top,0,chartArea.bottom); g.addColorStop(0, prog + '40'); g.addColorStop(1, prog + '05'); return g; } }]},
+    options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:16}}, interaction:{mode:'index', intersect:false},
+      plugins:{ legend:{display:false}, tooltip:{...tipStyle(), displayColors:false, callbacks:{ title:i => { const d = days[i[0].dataIndex]; return `${DOW[d.getDay()]}, ${fmt(d)}`; }, label:c => `${c.raw} de ${n} disponíveis`, afterLabel:c => { const d = days[c.dataIndex]; const fora = F.filter(s=>s.periodos.some(p=>perVis(p)&&p.ini<=d&&p.fim>=d)); return fora.length ? 'Fora: ' + fora.map(s=>s.curto).join(', ') : ''; } }} },
+      scales:{ x:{ grid:{display:false}, ticks:{ autoSkip:false, maxRotation:0, callback:(v,i) => { const d = days[i]; const prev = days[i-1]; return (!prev || prev.getMonth() !== d.getMonth()) ? MES[d.getMonth()] : ''; } } },
+               y:{ min:Math.max(0, n-Math.max(4, n-minV+1)), max:n, ticks:{precision:0, stepSize:1}, grid:{color:css('--grid')}, title:{display:true, text:'servidores', font:{size:10.5}} } } },
+    plugins:[plug] });
+  $('availLegend').innerHTML = `<span><i class="sw" style="background:var(--st-prog)"></i>Disponíveis</span><span><i class="sw" style="background:var(--danger);width:3px"></i>Hoje</span>`;
+}
+
+function renderMes(F){
+  const R = dataRange(); const months = []; for (let d = new Date(R.a); d <= R.b; d = new Date(d.getFullYear(), d.getMonth()+1, 1)) months.push(d);
+  const sets = SETORES.filter(st => F.some(s=>s.setor===st.key));
+  const card = css('--card');
+  const ds = sets.map(st => ({ label:st.label, backgroundColor:css(st.c), borderColor:card, borderWidth:{top:2}, borderRadius:4, borderSkipped:'bottom', maxBarThickness:32,
+    data: months.map(m => { const a = m, b = monthEnd(m); let t = 0; F.filter(s=>s.setor===st.key).forEach(s => s.periodos.filter(perVis).forEach(p => { const i = p.ini > a ? p.ini : a, f = p.fim < b ? p.fim : b; if (i <= f) t += ST.mesMode==='uteis' ? diasUteis(i,f) : diffD(i,f)+1; })); return t; }) }));
+  const cur = months.findIndex(m => mkey(m) === mkey(today));
+  $('mesDesc').textContent = ST.mesMode === 'uteis' ? 'Dias úteis de ausência em cada mês, por setor. Mede o impacto real no trabalho.' : 'Dias corridos de férias em cada mês, por setor.';
+  charts.mes?.destroy();
+  charts.mes = new Chart($('chMes'), { type:'bar', data:{ labels: months.map(m => `${MES[m.getMonth()]}/${String(m.getFullYear()).slice(2)}`), datasets:ds },
+    options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      onClick:(e, els) => { if (!els.length) return; const m = months[els[0].index]; ST.calMonth = monthStart(m); ST.calDay = new Date(m); setView('calendario'); },
+      onHover:(e, els) => { e.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      plugins:{ legend:legendCfg(), tooltip:{...tipStyle(), callbacks:{ label:c => ` ${c.dataset.label}: ${c.raw} dias`, footer:i => `Total: ${i.reduce((a,x)=>a+x.raw,0)} dias · clique para abrir o calendário` }} },
+      scales:{ x:{stacked:true, grid:{display:false}, ticks:{ color:c => c.index===cur ? css('--agu-blue-deep') : css('--slate'), font:c => ({weight:c.index===cur?'700':'400'}) }},
+               y:{stacked:true, grid:{color:css('--grid')}, ticks:{precision:0}, title:{display:true, text: ST.mesMode==='uteis'?'dias úteis':'dias corridos', font:{size:10.5}}} } } });
+}
+document.querySelectorAll('#mesToggle button').forEach(b => b.onclick = () => { ST.mesMode = b.dataset.v; document.querySelectorAll('#mesToggle button').forEach(x=>x.classList.toggle('active',x===b)); renderMes(L()); });
+
+/* =========================================================
+   LINHA DO TEMPO
+   ========================================================= */
+function gWindow(){
+  if (ST.gZoom === 'ano'){ const R = dataRange(); return R; }
+  if (ST.gZoom === 'tri'){ const a = monthStart(ST.gAnchor); return {a, b:monthEnd(new Date(a.getFullYear(), a.getMonth()+2, 1))}; }
+  const a = monthStart(ST.gAnchor); return {a, b:monthEnd(a)};
+}
+function renderGantt(F){
+  const W = gWindow(); const total = diffD(W.a, W.b) + 1;
+  const pct = d => diffD(W.a, d) / total * 100;
+  $('gNav').style.visibility = ST.gZoom === 'ano' ? 'hidden' : 'visible';
+  $('gPeriod').textContent = ST.gZoom === 'mes' ? `${MES_L[W.a.getMonth()]} ${W.a.getFullYear()}` : `${MES[W.a.getMonth()]} – ${MES[W.b.getMonth()]} ${W.b.getFullYear()}`;
+  // cabeçalho
+  let head = '', bg = '';
+  if (ST.gZoom === 'mes'){
+    for (let d = new Date(W.a); d <= W.b; d = addD(d,1)){ const h = HOL[iso(d)]; const cls = h && !isWeekend(d) ? 'hol' : (isWeekend(d) ? 'we' : ''); const isT = +d === +today;
+      head += `<div class="g-col day ${cls} ${isT?'cur':''}" ${h?`data-tip="${esc(`<b>${h.n}</b>${HOL_TIPO[h.t]}`)}"`:''}>${d.getDate()}<small>${DOW[d.getDay()][0].toUpperCase()}</small></div>`;
+      if (isWeekend(d)) bg += `<i class="we" style="left:${pct(d)}%;width:${100/total}%"></i>`;
+      else if (h) bg += `<i class="hl" style="left:${pct(d)}%;width:${100/total}%"></i>`; }
+  } else {
+    for (let m = new Date(W.a); m <= W.b; m = new Date(m.getFullYear(), m.getMonth()+1, 1)){ const dd = monthEnd(m).getDate();
+      head += `<div class="g-col ${mkey(m)===mkey(today)?'cur':''}" style="flex:${dd}">${ST.gZoom==='tri'?MES_L[m.getMonth()]:MES[m.getMonth()]}<small>${m.getFullYear()}</small></div>`;
+      bg += `<i class="m" style="left:${pct(m)}%"></i>`; }
+    FERIADOS.forEach(([ds,t]) => { const d = parseD(ds); if (d < W.a || d > W.b || isWeekend(d) || t==='M') return;
+      bg += ST.gZoom === 'tri' ? `<i class="hl" style="left:${pct(d)}%;width:${100/total}%"></i>` : `<i class="hline" style="left:${pct(d)}%"></i>`; });
+  }
+  const showT = today >= W.a && today <= W.b; const tP = pct(today) + (ST.gZoom!=='ano' ? 50/total : 0);
+  const tline = showT ? `<div class="g-today" style="left:${tP}%"></div>` : '';
+  let html = `<div class="g-head"><div class="g-lbl">Servidor</div><div class="g-cols">${head}${showT?`<div class="g-today-tag" style="left:${tP}%;top:auto;bottom:-1px;border-radius:6px 6px 0 0">Hoje</div>`:''}</div></div>`;
+  const groups = SETORES.map(st => ({st, ms:F.filter(s=>s.setor===st.key)})).filter(g=>g.ms.length);
+  const outros = F.filter(s => !SETORES.some(st=>st.key===s.setor)); if (outros.length) groups.push({st:setorOf(outros[0].setor), ms:outros});
+  groups.forEach(g => {
+    const total_s = SERV.filter(s=>s.setor===g.st.key).length;
+    const foraHoje = g.ms.filter(s=>s.periodos.some(p=>p.sit==='gozo')).length;
+    html += `<div class="g-group"><div class="g-lbl"><i class="sw" style="background:var(${g.st.c})"></i>${esc(g.st.label)} <span class="occ">${g.ms.length} de ${total_s} · ${foraHoje} fora hoje</span></div><div class="g-track" style="min-height:0"></div></div>`;
+    g.ms.sort((a,b) => (a.periodos[0]?.ini||Infinity) - (b.periodos[0]?.ini||Infinity) || a.nome.localeCompare(b.nome)).forEach(s => {
+      const bars = s.periodos.filter(perVis).map(p => {
+        if (!overlap(p.ini, p.fim, W.a, W.b)) return '';
+        const i = p.ini < W.a ? W.a : p.ini, f = p.fim > W.b ? W.b : p.fim;
+        const left = pct(i), w = Math.max((diffD(i,f)+1)/total*100, .4);
+        const conf = p.conf.map(c=>c.s.curto);
+        const tip = `<b>${esc(s.nomeT)}</b>${p.n}º período · ${esc(p.tipo)}<br>${fmt(p.ini)} a ${fmt(p.fim)}<br>${p.corridos} dias corridos · ${p.uteis} úteis${p.fer.length?`<br>Inclui: ${esc(p.fer.map(h=>`${fmtS(h.d)} ${h.n}`).join('; '))}`:''}<br>Situação: ${SIT_LBL[p.sit]}${p.sit==='programada'?` · em ${plural(diffD(today,p.ini),'dia','dias')}`:''}${conf.length?`<br>⚠ Sobrepõe com ${esc(conf.join(', '))}`:''}`;
+        const lbl = w > 9 ? `${fmtS(p.ini)} – ${fmtS(p.fim)} · ${p.corridos}d` : (w > 2.2 ? `${p.corridos}d` : '');
+        return `<button type="button" class="g-bar s-${p.sit} ${conf.length?'conflict':''} ${p.ini<W.a?'clipL':''} ${p.fim>W.b?'clipR':''}" style="left:${left}%;width:${w}%" data-tip="${esc(tip)}" data-s="${s.id}" aria-label="${esc(`${s.nomeT}: ${fmt(p.ini)} a ${fmt(p.fim)}`)}">${lbl}</button>`;
+      }).join('');
+      const empty = !s.periodos.length ? `<div class="g-empty">Sem programação · ${DIREITO} dias a programar</div>` : '';
+      const st = statusServ(s);
+      html += `<div class="g-row"><button type="button" class="g-lbl" data-s="${s.id}">${avatar(s,28)}<span class="g-lbl-txt"><span class="g-name">${esc(s.nomeT)}</span><span class="g-meta">${s.cargo?esc(s.cargo.replace(' de Licitações e Contratos','')) + ' · ':''}${s.saldo?`<span class="badge b-red">saldo ${s.saldo}d</span>`:`<span class="badge b-green">30d com data</span>`}</span></span></button><div class="g-track"><div class="g-bg">${bg}</div>${tline}${empty}${bars}</div></div>`;
+    });
+  });
+  if (!groups.length) html += '<div class="empty">Nenhum servidor atende aos filtros.</div>';
+  $('gantt').innerHTML = html;
+  $('gantt').style.minWidth = ST.gZoom === 'mes' ? '1100px' : '1000px';
+  $('gantt').querySelectorAll('[data-s]').forEach(b => b.onclick = () => openDrawer(+b.dataset.s));
+}
+document.querySelectorAll('#gZoom button').forEach(b => b.onclick = () => { ST.gZoom = b.dataset.v; document.querySelectorAll('#gZoom button').forEach(x=>x.classList.toggle('active',x===b)); if (ST.gZoom==='tri') ST.gAnchor = new Date(today.getFullYear(), today.getMonth()-1, 1); if (ST.gZoom==='mes') ST.gAnchor = monthStart(today); renderGantt(L()); });
+$('gPrev').onclick = () => { ST.gAnchor = new Date(ST.gAnchor.getFullYear(), ST.gAnchor.getMonth() - (ST.gZoom==='tri'?3:1), 1); renderGantt(L()); };
+$('gNext').onclick = () => { ST.gAnchor = new Date(ST.gAnchor.getFullYear(), ST.gAnchor.getMonth() + (ST.gZoom==='tri'?3:1), 1); renderGantt(L()); };
+$('gToday').onclick = () => { ST.gAnchor = ST.gZoom==='tri' ? new Date(today.getFullYear(), today.getMonth()-1, 1) : monthStart(today); renderGantt(L()); };
+
+function renderHeat(F){
+  const R = dataRange(); const start = addD(R.a, -((R.a.getDay()+6)%7));
+  const weeks = []; for (let d = new Date(start); d <= R.b; d = addD(d,7)) weeks.push(d);
+  const sets = SETORES.filter(st => F.some(s=>s.setor===st.key));
+  const dng = css('--danger');
+  let html = '<div class="heat-lbl"></div>' + weeks.map((w,i) => { const th = addD(w,3), pv = i ? addD(weeks[i-1],3) : null; return `<div class="heat-mlbl">${!pv || th.getMonth()!==pv.getMonth() ? MES[th.getMonth()] : ''}</div>`; }).join('');
+  sets.forEach(st => {
+    const membros = SERV.filter(s=>s.setor===st.key), vis = F.filter(s=>s.setor===st.key);
+    html += `<div class="heat-lbl"><span class="sectag"><i style="background:var(${st.c})"></i>${st.label} (${membros.length})</span></div>`;
+    weeks.forEach(w => {
+      let pico = 0; const nomes = new Set();
+      for (let k=0;k<5;k++){ const d = addD(w,k); let c = 0; vis.forEach(s => s.periodos.forEach(p => { if (perVis(p) && p.ini<=d && p.fim>=d){ c++; nomes.add(s.curto); } })); pico = Math.max(pico,c); }
+      const r = membros.length ? pico/membros.length : 0;
+      const isT = today >= w && today < addD(w,7);
+      const lvl = r === 0 ? 0 : Math.min(92, 25 + r*135);
+      const bg = r ? `background:color-mix(in srgb, ${dng} ${lvl}%, var(--card))` : '';
+      const tip = `<b>${st.label} · semana de ${fmtS(w)}</b>${pico} de ${membros.length} fora no pico (${Math.round(r*100)}%)${nomes.size?'<br>'+esc([...nomes].join(', ')):''}`;
+      html += `<button type="button" class="heat-cell ${isT?'today':''}" style="${bg}" data-tip="${esc(tip)}" data-w="${iso(w)}" aria-label="${esc(`${st.label}, semana de ${fmtS(w)}: ${pico} fora`)}">${pico?`<span class="n" style="color:${r>=.3?'#fff':'var(--ink)'}">${pico}</span>`:''}</button>`;
+    });
+  });
+  const h = $('heat'); h.style.gridTemplateColumns = `130px repeat(${weeks.length}, minmax(14px,1fr))`; h.innerHTML = sets.length ? html : '<div class="empty">Sem dados no filtro.</div>';
+  h.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const d = parseD(b.dataset.w); ST.calMonth = monthStart(addD(d,2)); ST.calDay = d; setView('calendario'); });
+  $('heatScale').innerHTML = `<span>0%</span><i style="background:var(--grid)"></i><i style="background:color-mix(in srgb, ${dng} 40%, var(--card))"></i><i style="background:color-mix(in srgb, ${dng} 65%, var(--card))"></i><i style="background:color-mix(in srgb, ${dng} 92%, var(--card))"></i><span>50%+ do setor fora</span>`;
+}
+
+/* =========================================================
+   CALENDÁRIO
+   ========================================================= */
+function foraNoDia(F, d){ const out = []; F.forEach(s => s.periodos.forEach(p => { if (perVis(p) && p.ini<=d && p.fim>=d) out.push({s,p}); })); return out; }
+function renderCalendar(F){
+  const m = ST.calMonth, a = monthStart(m), b = monthEnd(m);
+  $('calTitle').textContent = `${MES_L[m.getMonth()].charAt(0).toUpperCase()+MES_L[m.getMonth()].slice(1)} de ${m.getFullYear()}`;
+  const start = addD(a, -((a.getDay()+6)%7)); const end = addD(b, (7 - ((b.getDay()+6)%7) - 1));
+  const n = F.length;
+  let html = ['seg','ter','qua','qui','sex','sáb','dom'].map(d => `<div class="cal-dow">${d}</div>`).join('');
+  for (let d = new Date(start); d <= end; d = addD(d,1)){
+    const h = HOL[iso(d)]; const fora = foraNoDia(F, d); const pres = n - fora.length; const r = n ? pres/n : 1;
+    const cls = [d.getMonth()!==m.getMonth()?'out':'', isWeekend(d)?'we':'', h&&!isWeekend(d)?'hol':'', +d===+today?'today':'', +d===+ST.calDay?'sel':''].join(' ');
+    const ppl = fora.slice(0,4).map(({s,p}) => `<span class="cal-p ${p.sit==='gozo'?'st-gozo':''}" style="background:var(${setorOf(s.setor).c})" title="${esc(s.nomeT)}">${esc(s.curto.split(' ')[0])}</span>`).join('') + (fora.length>4?`<span class="cal-p" style="background:var(--slate)">+${fora.length-4}</span>`:'');
+    html += `<button type="button" class="cal-day ${cls}" data-d="${iso(d)}" aria-label="${esc(`${fmt(d)}: ${fora.length} fora`)}"><span class="cal-top"><span class="cal-n">${d.getDate()}</span>${fora.length?`<span class="badge b-gray" style="padding:1px 6px">${fora.length}</span>`:''}</span>${h?`<span class="cal-hol">${esc(h.n)}</span>`:''}<span class="cal-people">${ppl}</span>${!isWeekend(d) && n ? `<span class="cal-cap ${r<.75?'crit':r<.9?'lo':''}"><i style="width:${r*100}%"></i></span>`:''}</button>`;
+  }
+  $('cal').innerHTML = html;
+  $('cal').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { ST.calDay = parseD(b.dataset.d); if (ST.calDay.getMonth() !== ST.calMonth.getMonth()) ST.calMonth = monthStart(ST.calDay); renderCalendar(L()); });
+  $('calLegend').innerHTML = SETORES.filter(st=>F.some(s=>s.setor===st.key)).map(st=>`<span><i class="sw" style="background:var(${st.c})"></i>${st.label}</span>`).join('') + `<span><i class="sw" style="background:var(--hol-soft);box-shadow:inset 0 0 0 1px var(--hol)"></i>Feriado / ponto facultativo</span><span><i class="sw" style="background:var(--agu-green)"></i>Barra: equipe presente</span>`;
+  // painel do dia
+  const d = ST.calDay, fora = foraNoDia(F, d), h = HOL[iso(d)];
+  $('dayTitle').textContent = `${DOW[d.getDay()]}, ${fmt(d)}`;
+  $('daySub').innerHTML = (h ? `<span class="badge b-hol">${esc(HOL_TIPO[h.t])}: ${esc(h.n)}</span> ` : '') + (isWeekend(d) ? 'Fim de semana. ' : '') + `${n - fora.length} de ${n} servidores disponíveis.`;
+  $('dayList').innerHTML = fora.length ? fora.map(({s,p}) => `<button type="button" class="row" data-s="${s.id}">${avatar(s,32)}<span style="min-width:0;flex:1"><span class="nm" style="display:block">${esc(s.nomeT)}</span><span class="sub">${setorOf(s.setor).label} · ${fmtS(p.ini)} a ${fmtS(p.fim)} · volta ${fmtS(addD(p.fim,1))}</span></span><span class="badge ${SIT_B[p.sit]}">${SIT_LBL[p.sit]}</span></button>`).join('') : '<div class="empty" style="padding:18px">Ninguém de férias neste dia.</div>';
+  $('dayList').querySelectorAll('[data-s]').forEach(b => b.onclick = () => openDrawer(+b.dataset.s));
+  // resumo do mês
+  let du = 0, ausU = 0, pior = null;
+  for (let x = new Date(a); x <= b; x = addD(x,1)){ if (!isUtil(x)) continue; du++; const f = foraNoDia(F,x).length; ausU += f; if (!pior || f > pior.f) pior = {d:new Date(x), f}; }
+  const hols = FERIADOS.filter(([ds]) => { const x = parseD(ds); return x >= a && x <= b; });
+  const quem = new Set(); F.forEach(s => s.periodos.forEach(p => { if (perVis(p) && overlap(p.ini,p.fim,a,b)) quem.add(s.curto); }));
+  $('monthSum').innerHTML = `
+    <div class="al info"><span class="stripe"></span><div><h4>${du} dias úteis no mês</h4><p>${hols.length ? hols.map(([ds,t,nm]) => `${fmtS(parseD(ds))} ${nm}`).join(' · ') : 'Sem feriados ou pontos facultativos.'}</p></div></div>
+    <div class="al ${ausU?'warn':'ok'}"><span class="stripe"></span><div><h4>${ausU} dias úteis de ausência</h4><p>${quem.size ? `${plural(quem.size,'servidor','servidores')} de férias no mês: ${[...quem].join(', ')}.` : 'Ninguém de férias no mês.'}</p></div></div>
+    ${pior && pior.f ? `<div class="al ${pior.f>=3?'crit':'warn'}"><span class="stripe"></span><div><h4>Dia mais desfalcado: ${fmtS(pior.d)}</h4><p>${pior.f} de ${n} fora (${Math.round(pior.f/n*100)}% da equipe filtrada).</p></div></div>` : ''}`;
+}
+$('cPrev').onclick = () => { ST.calMonth = new Date(ST.calMonth.getFullYear(), ST.calMonth.getMonth()-1, 1); renderCalendar(L()); };
+$('cNext').onclick = () => { ST.calMonth = new Date(ST.calMonth.getFullYear(), ST.calMonth.getMonth()+1, 1); renderCalendar(L()); };
+$('cToday').onclick = () => { ST.calMonth = monthStart(today); ST.calDay = new Date(today); renderCalendar(L()); };
+
+/* =========================================================
+   EQUIPE
+   ========================================================= */
+function sortTeam(F){
+  const k = ST.teamSort; const nx = s => { const f = s.periodos.find(p=>p.fim>=today); return f ? +f.ini : Infinity; };
+  return [...F].sort((a,b) => k==='saldo' ? b.saldo-a.saldo || a.nome.localeCompare(b.nome) : k==='prox' ? nx(a)-nx(b) : k==='setor' ? a.setor.localeCompare(b.setor) || a.nome.localeCompare(b.nome) : a.nome.localeCompare(b.nome));
+}
+function renderTeam(F){
+  const out = $('teamOut');
+  if (!F.length){ out.innerHTML = '<div class="empty">Nenhum servidor atende aos filtros.</div>'; renderSaldo(F); return; }
+  if (ST.teamMode === 'cards'){
+    out.innerHTML = `<div class="cards">${sortTeam(F).map(s => { const st = statusServ(s);
+      return `<button type="button" class="pcard" data-s="${s.id}">
+        <span class="pcard-top">${avatar(s,40)}<span style="min-width:0;flex:1;display:flex;flex-direction:column;gap:2px"><span class="nm">${esc(s.nomeT)}</span><span style="display:flex;gap:8px;align-items:center">${sectag(s)}<span class="sub">SIAPE ${s.siape?esc(s.siape):'<b style="color:var(--danger-ink)">não informado</b>'}</span></span></span></span>
+        <span class="pcard-body">${ring([{v:s.goz,c:'--st-done'},{v:s.aGozar,c:'--st-prog'},{v:s.saldo,c:'--st-saldo'}],64,8,String(s.saldo),'saldo')}
+          <span class="pcard-stats"><span style="display:flex;flex-direction:column"><b>${s.goz}</b><span>gozados</span></span><span style="display:flex;flex-direction:column"><b>${s.aGozar}</b><span>a gozar</span></span><span style="display:flex;flex-direction:column"><b>${s.uteis}</b><span>dias úteis</span></span></span></span>
+        <span class="pchips">${s.periodos.length ? s.periodos.map(p => `<span class="pchip"><i style="background:var(${p.sit==='gozo'?'--st-gozo':p.sit==='programada'?'--st-prog':'--st-done'})"></i>${fmtS(p.ini)} – ${fmtS(p.fim)} · ${p.corridos}d</span>`).join('') : '<span class="pchip" style="color:var(--danger-ink);background:var(--danger-soft)">Nenhum período programado</span>'}</span>
+        ${s.periodos.length ? `<span><span class="badge ${st.cls}">${esc(st.txt)}</span></span>` : ''}
+      </button>`; }).join('')}</div>`;
+  } else if (ST.teamMode === 'tabela'){
+    const cols = [['siape','SIAPE'],['nome','Servidor'],['setor','Setor'],['np','Etapas','num'],['prog','Programados','num'],['goz','Gozados','num'],['uteis','Dias úteis','num'],['saldo','Saldo','num'],['prox','Próxima saída'],['st','Situação atual'],['q','Qualidade','num']];
+    const rows = F.map(s => { const f = s.periodos.find(p=>p.ini>today); const st = statusServ(s); const rq = Object.values(s.rules).filter(r=>r.st!=='na'); const qq = Math.round(rq.filter(r=>r.st==='ok').length/rq.length*100);
+      return {s, siape:s.siape||'', nome:s.nomeT, setor:setorOf(s.setor).label, np:s.periodos.length, prog:s.prog, goz:s.goz, uteis:s.uteis, saldo:s.saldo, prox:f?+f.ini:Infinity, f, st:st.ord, stO:st, q:qq}; });
+    const so = ST.sort; rows.sort((a,b) => { const x=a[so.k], y=b[so.k]; return (typeof x==='number'&&typeof y==='number' ? x-y : String(x).localeCompare(String(y),'pt-BR')) * so.d; });
+    out.innerHTML = `<div class="table-scroll"><table class="dt"><thead><tr>${cols.map(c=>`<th data-k="${c[0]}" class="${c[2]||''}">${c[1]}${so.k===c[0]?(so.d>0?' ▲':' ▼'):''}</th>`).join('')}</tr></thead><tbody>${rows.map(r => { const s = r.s;
+      return `<tr data-s="${s.id}"><td>${s.siape?esc(s.siape):'<span class="badge b-red">não informado</span>'}</td><td><b>${esc(s.nomeT)}</b></td><td>${sectag(s)}</td><td class="num">${r.np}</td><td class="num"><span class="mbar"><i style="width:${s.goz/DIREITO*100}%;background:var(--st-done)"></i><i style="width:${s.aGozar/DIREITO*100}%;background:var(--st-prog)"></i></span>${s.prog}</td><td class="num">${s.goz}</td><td class="num">${s.uteis}</td><td class="num">${s.saldo?`<span class="badge b-red">${s.saldo}</span>`:'0'}</td><td>${r.f?`${fmt(r.f.ini)} <span class="sub">(${r.f.corridos}d)</span>`:'—'}</td><td><span class="badge ${r.stO.cls}">${esc(r.stO.txt)}</span></td><td class="num"><span class="badge ${r.q>=85?'b-green':r.q>=65?'b-amber':'b-red'}">${r.q}%</span></td></tr>`; }).join('')}</tbody></table></div>`;
+    out.querySelectorAll('th').forEach(th => th.onclick = () => { const k = th.dataset.k; ST.sort = {k, d: ST.sort.k===k ? -ST.sort.d : 1}; renderTeam(L()); });
+  } else {
+    const rows = []; sortTeam(F).forEach(s => s.periodos.filter(perVis).forEach(p => rows.push({s,p})));
+    rows.sort((a,b)=>a.p.ini-b.p.ini);
+    out.innerHTML = `<div class="table-scroll"><table class="dt"><thead><tr><th>Servidor</th><th>Setor</th><th class="num">Etapa</th><th>Início</th><th>Fim</th><th>Retorno</th><th class="num">Corridos</th><th class="num">Úteis</th><th>Feriados no período</th><th>Situação</th><th>Sobreposição no setor</th></tr></thead><tbody>${rows.map(({s,p}) => `<tr data-s="${s.id}"><td><b>${esc(s.nomeT)}</b></td><td>${sectag(s)}</td><td class="num">${p.n}º</td><td>${fmt(p.ini)} <span class="sub">${DOW[p.ini.getDay()]}</span></td><td>${fmt(p.fim)} <span class="sub">${DOW[p.fim.getDay()]}</span></td><td>${fmt(addD(p.fim,1))}</td><td class="num">${p.corridos}</td><td class="num">${p.uteis}</td><td>${p.fer.length?p.fer.map(h=>`<span class="badge b-hol" title="${esc(h.n)}">${fmtS(h.d)}</span>`).join(' '):'<span class="sub">—</span>'}</td><td><span class="badge ${SIT_B[p.sit]}">${SIT_LBL[p.sit]}</span></td><td>${p.conf.length?`<span class="badge b-red">${esc(p.conf.map(c=>c.s.curto).join(', '))}</span>`:'<span class="sub">—</span>'}</td></tr>`).join('') || '<tr><td colspan="11"><div class="empty">Nenhum período no filtro.</div></td></tr>'}</tbody></table></div>`;
+  }
+  out.querySelectorAll('[data-s]').forEach(b => b.onclick = () => openDrawer(+b.dataset.s));
+  renderSaldo(F);
+}
+$('teamSort').onchange = e => { ST.teamSort = e.target.value; renderTeam(L()); };
+document.querySelectorAll('#teamMode button').forEach(b => b.onclick = () => { ST.teamMode = b.dataset.v; document.querySelectorAll('#teamMode button').forEach(x=>x.classList.toggle('active',x===b)); renderTeam(L()); });
+
+function renderSaldo(F){
+  const S = [...F].sort((a,b) => b.saldo-a.saldo || a.aGozar-b.aGozar || a.nome.localeCompare(b.nome));
+  $('saldoBox').style.height = Math.max(220, S.length*32 + 70) + 'px';
+  const card = css('--card');
+  const mk = (label, data, c) => ({label, data, backgroundColor:css(c), borderColor:card, borderWidth:{left:2}, borderSkipped:false, borderRadius:4, maxBarThickness:18});
+  charts.saldo?.destroy();
+  charts.saldo = new Chart($('chSaldo'), { type:'bar',
+    data:{ labels:S.map(s=>s.curto), datasets:[ mk('Gozados', S.map(s=>s.goz), '--st-done'), mk('Programados a gozar', S.map(s=>s.aGozar), '--st-prog'), mk('A programar', S.map(s=>s.saldo), '--st-saldo') ] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false},
+      onClick:(e,els) => { if (els.length) openDrawer(S[els[0].index].id); },
+      onHover:(e,els) => { e.native.target.style.cursor = els.length ? 'pointer':'default'; },
+      plugins:{ legend:legendCfg(), tooltip:{...tipStyle(), callbacks:{ title:i => S[i[0].dataIndex].nomeT, label:c => ` ${c.dataset.label}: ${c.raw} dias`, footer:() => 'Clique para abrir a ficha' }} },
+      scales:{ x:{stacked:true, max:DIREITO, grid:{color:css('--grid')}, ticks:{stepSize:5}, title:{display:true, text:'dias corridos (direito de 30)', font:{size:10.5}}}, y:{stacked:true, grid:{display:false}, ticks:{color:css('--ink'), font:{size:11.5}}} } } });
+}
+
+/* =========================================================
+   SIMULADOR
+   ========================================================= */
+const SIM = { serv:null, ini:null, dias:15 };
+function simCalc(){
+  const s = SERV.find(x => x.id === SIM.serv); if (!s || !SIM.ini) return null;
+  const ini = SIM.ini, fim = addD(ini, SIM.dias - 1);
+  const uteis = diasUteis(ini, fim), fer = feriadosEntre(ini, fim);
+  const membros = SERV.filter(x => x.setor === s.setor && x !== s);
+  const confl = []; membros.forEach(m => m.periodos.forEach(p => { if (overlap(p.ini,p.fim,ini,fim)) confl.push({s:m, p, i: p.ini>ini?p.ini:ini, f: p.fim<fim?p.fim:fim}); }));
+  let pico = 0; for (let d = new Date(ini); d <= fim; d = addD(d,1)){ const c = 1 + membros.filter(m=>m.periodos.some(p=>p.ini<=d&&p.fim>=d)).length; pico = Math.max(pico, c); }
+  const total = SERV.filter(x=>x.setor===s.setor).length;
+  const proprio = s.periodos.filter(p => overlap(p.ini,p.fim,ini,fim));
+  const coord = s.setor === 'COORDENAÇÃO' ? membros.filter(m => m.periodos.some(p => overlap(p.ini,p.fim,ini,fim))) : [];
+  const novoTotal = s.prog + SIM.dias, etapas = s.periodos.length + 1;
+  const ano = s.periodos[0]?.ini.getFullYear() || today.getFullYear();
+  return {s, ini, fim, uteis, fer, confl, pico, total, proprio, coord, novoTotal, etapas, ano, saldoApos: Math.max(0, DIREITO - novoTotal)};
+}
+function renderSim(){
+  if (SIM.serv == null){ const cand = [...SERV].sort((a,b)=>b.saldo-a.saldo)[0]; SIM.serv = cand?.id ?? 0; SIM.dias = Math.min(cand?.saldo || 15, 30) || 15; }
+  if (!SIM.ini){ let d = addD(today, 7); while (d.getDay() !== 1) d = addD(d,1); SIM.ini = d; }
+  $('sServ').value = SIM.serv; $('sIni').value = iso(SIM.ini); $('sDias').value = SIM.dias;
+  const r = simCalc(); if (!r) return;
+  $('sFim').textContent = `${DOW[r.fim.getDay()]}, ${fmt(r.fim)}`;
+  $('simKpis').innerHTML = `
+    <div class="sim-kpi"><b>${SIM.dias}</b><span>dias corridos</span></div>
+    <div class="sim-kpi"><b>${r.uteis}</b><span>dias úteis consumidos${r.fer.length?` · ${plural(r.fer.length,'feriado/ponto incluído','feriados/pontos incluídos')}`:''}</span></div>
+    <div class="sim-kpi"><b style="color:${r.novoTotal>DIREITO?'var(--danger)':'inherit'}">${r.saldoApos}</b><span>saldo após (tinha ${r.s.saldo})</span></div>
+    <div class="sim-kpi"><b style="color:${r.pico/r.total>=.5?'var(--danger)':r.pico>1?'var(--warn-ink)':'var(--agu-green-ink)'}">${r.pico} de ${r.total}</b><span>pico de ausência no setor</span></div>`;
+  const C = [];
+  C.push(r.novoTotal <= DIREITO ? {st:'ok', t:'Dentro do limite de 30 dias', d:`Total no exercício: ${r.novoTotal} dias.`} : {st:'crit', t:'Ultrapassa 30 dias no exercício', d:`Total ficaria em ${r.novoTotal} dias (${r.novoTotal-DIREITO} a mais). Só com acúmulo justificado.`});
+  C.push(r.etapas <= MAX_ETAPAS ? {st:'ok', t:`${r.etapas}ª etapa de até 3`, d:'Lei 8.112/1990, art. 77, § 3º.'} : {st:'crit', t:`Seria a ${r.etapas}ª etapa`, d:'O parcelamento é limitado a 3 etapas.'});
+  C.push(r.proprio.length ? {st:'crit', t:'Coincide com período já programado', d:r.proprio.map(p=>`${fmt(p.ini)} a ${fmt(p.fim)}`).join('; ')} : {st:'ok', t:'Não coincide com outros períodos do servidor', d:''});
+  C.push(r.confl.length ? {st: r.pico/r.total >= .5 ? 'crit' : 'warn', t:`${plural(new Set(r.confl.map(c=>c.s.id)).size,'colega','colegas')} do setor fora no mesmo período`, d:r.confl.map(c=>`${c.s.curto} (${fmtS(c.i)} a ${fmtS(c.f)})`).join('; ')} : {st:'ok', t:'Nenhum colega do setor fora no período', d:''});
+  if (r.s.setor === 'COORDENAÇÃO') C.push(r.coord.length ? {st:'crit', t:'Coordenação ficaria descoberta', d:`${r.coord.map(c=>c.curto).join(', ')} também estaria de férias.`} : {st:'ok', t:'Coordenação continua coberta', d:''});
+  C.push(r.fim.getFullYear() > r.ano ? {st:'warn', t:'Termina no ano seguinte', d:`O período avança para ${r.fim.getFullYear()}. Confirmar o exercício de referência.`} : {st:'ok', t:'Dentro do ano do exercício', d:''});
+  C.push(r.ini <= today ? {st:'warn', t:'Início no passado ou hoje', d:'Escolha uma data futura para programar.'} : {st:'ok', t:`Começa em ${plural(diffD(today,r.ini),'dia','dias')}`, d:''});
+  const cltP = []; if (SIM.dias < 5) cltP.push('parcela abaixo de 5 dias'); for (let k=1;k<=2;k++){ const d = addD(r.ini,k); if (d.getDay()===0 || (HOL[iso(d)]&&HOL[iso(d)].t==='F')){ cltP.push(`início a ${k} dia(s) de ${d.getDay()===0?'domingo':HOL[iso(d)].n}`); break; } }
+  C.push(cltP.length ? {st:'info', t:'Se for empregado CLT', d:cltP.join('; ') + ' (CLT, art. 134).'} : {st:'ok', t:'Compatível também com a CLT', d:'Parcela de 5 dias ou mais e início fora dos 2 dias antes de repouso ou feriado.'});
+  const IC = {ok:'✓', warn:'!', crit:'✕', info:'i'};
+  $('simChecks').innerHTML = C.map(c => `<div class="check"><span class="ic ${c.st}">${IC[c.st]}</span><div><b>${esc(c.t)}</b>${c.d?`<p>${esc(c.d)}</p>`:''}</div></div>`).join('');
+  // mini linha do tempo do setor
+  const A = addD(r.ini, -14), B = addD(r.fim, 14), tot = diffD(A,B)+1, pc = d => diffD(A,d)/tot*100;
+  const membros = SERV.filter(x=>x.setor===r.s.setor);
+  const holBg = FERIADOS.map(([ds,t]) => { const d = parseD(ds); return d>=A && d<=B && !isWeekend(d) && t!=='M' ? `<i class="hl" style="left:${pc(d)}%;width:${100/tot}%"></i>` : ''; }).join('');
+  let weBg = ''; for (let d = new Date(A); d <= B; d = addD(d,1)) if (isWeekend(d)) weBg += `<i class="we" style="left:${pc(d)}%;width:${100/tot}%"></i>`;
+  $('simTl').innerHTML = `<div class="gantt-scroll" style="margin-top:0"><div class="gantt" style="min-width:560px;--lbl:150px">
+    <div class="g-head"><div class="g-lbl">${fmtS(A)} – ${fmtS(B)}</div><div class="g-cols"></div></div>
+    ${membros.map(m => { const bars = m.periodos.filter(p=>overlap(p.ini,p.fim,A,B)).map(p => { const i = p.ini<A?A:p.ini, f = p.fim>B?B:p.fim; return `<span class="g-bar s-${p.sit}" style="left:${pc(i)}%;width:${(diffD(i,f)+1)/tot*100}%" data-tip="${esc(`<b>${m.nomeT}</b>${fmt(p.ini)} a ${fmt(p.fim)}`)}">${p.corridos}d</span>`; }).join('');
+      const sim = m === r.s ? `<span class="g-bar s-sim" style="left:${pc(r.ini)}%;width:${SIM.dias/tot*100}%" data-tip="${esc(`<b>Simulação</b>${fmt(r.ini)} a ${fmt(r.fim)} · ${r.uteis} úteis`)}">simulado</span>` : '';
+      return `<div class="g-row"><div class="g-lbl" style="cursor:default"><span class="g-name" style="${m===r.s?'color:var(--agu-green-ink)':''}">${esc(m.curto)}</span></div><div class="g-track" style="min-height:42px"><div class="g-bg">${weBg}${holBg}</div>${bars}${sim}</div></div>`; }).join('')}
+  </div></div>`;
+  renderSugg(r);
+}
+function renderSugg(r){
+  const s = r.s, dias = SIM.dias; const fimEx = new Date(r.ano, 11, 31);
+  const membros = SERV.filter(x=>x.setor===s.setor && x!==s); const total = membros.length + 1;
+  const cands = [];
+  for (let d = addD(today,1); d <= fimEx; d = addD(d,1)){
+    if (!isUtil(d)) continue;
+    if ([1,2].some(k => { const x = addD(d,k); return x.getDay()===0 || (HOL[iso(x)] && HOL[iso(x)].t==='F'); })) continue;
+    const f = addD(d, dias-1); if (f > fimEx) break;
+    if (s.periodos.some(p=>overlap(p.ini,p.fim,d,f))) continue;
+    let pd = 0, pico = 1; for (let x = new Date(d); x <= f; x = addD(x,1)){ if (!isUtil(x)) continue; const c = membros.filter(m=>m.periodos.some(p=>p.ini<=x&&p.fim>=x)).length; pd += c; pico = Math.max(pico, c+1); }
+    if (s.setor==='COORDENAÇÃO' && pd > 0) continue;
+    const u = diasUteis(d,f);
+    cands.push({d, f, u, pd, pico, score: pd*100 + u*3 + (d.getDay()===1?0:1)});
+  }
+  cands.sort((a,b)=>a.score-b.score || a.d-b.d);
+  const pick = []; for (const c of cands){ if (pick.every(p => Math.abs(diffD(p.d,c.d)) > 6)) pick.push(c); if (pick.length === 5) break; }
+  $('suggDesc').textContent = `Para ${s.curto}, ${dias} dias corridos até 31/12/${r.ano}: menos colegas do setor fora e menor consumo de dias úteis, com início em dia útil fora dos 2 dias que antecedem domingo ou feriado. Clique para aplicar.`;
+  $('sugg').innerHTML = pick.length ? pick.map((c,i) => `<button type="button" data-d="${iso(c.d)}"><span class="rank">${i+1}</span><span><b>${DOW[c.d.getDay()]}, ${fmt(c.d)}</b> a ${fmt(c.f)}<br><span class="sub">${c.u} dias úteis para ${dias} corridos${c.pd?` · ${c.pico} de ${total} fora no pico`:' · ninguém do setor fora'}</span></span><span class="badge ${c.pd?'b-amber':'b-green'}">${c.pd?'com sobreposição':'sem conflito'}</span></button>`).join('') : '<div class="empty">Nenhuma janela disponível até o fim do exercício para essa duração.</div>';
+  $('sugg').querySelectorAll('[data-d]').forEach(b => b.onclick = () => { SIM.ini = parseD(b.dataset.d); renderSim(); toast('Janela aplicada ao simulador'); });
+}
+$('sServ').onchange = e => { SIM.serv = +e.target.value; const s = SERV.find(x=>x.id===SIM.serv); if (s && s.saldo) SIM.dias = s.saldo; renderSim(); };
+$('sIni').onchange = e => { if (e.target.value) { SIM.ini = parseD(e.target.value); renderSim(); } };
+$('sDias').oninput = e => { const v = Math.max(1, Math.min(60, +e.target.value || 1)); SIM.dias = v; renderSim(); };
+
+/* =========================================================
+   QUALIDADE
+   ========================================================= */
+function qualityScore(F){
+  let ok=0, warn=0, crit=0;
+  F.forEach(s => RULES.forEach(R => { if (R.info) return; const r = s.rules[R.id]; if (!r || r.st==='na') return; if (r.st==='ok') ok++; else if (r.st==='warn') warn++; else crit++; }));
+  const total = ok+warn+crit; return {ok, warn, crit, total, pct: total ? Math.round((ok + warn*.5)/total*100) : 100};
+}
+function renderQuality(F){
+  const q = qualityScore(F);
+  $('qRing').innerHTML = ring([{v:q.ok,c:'--agu-green'},{v:q.warn,c:'--warn'},{v:q.crit,c:'--danger'}],132,14,q.pct+'%','qualidade');
+  const per = F.reduce((a,s)=>a+s.periodos.length,0);
+  $('qStats').innerHTML = `<div class="q-stat"><b>${F.length} · ${per}</b><span>servidores · períodos lidos</span></div><div class="q-stat"><b style="color:var(--agu-green-ink)">${q.ok}</b><span>verificações atendidas</span></div><div class="q-stat"><b style="color:var(--danger-ink)">${q.crit} <small style="font-size:13px;color:var(--warn-ink)">+ ${q.warn} alertas</small></b><span>falhas a corrigir</span></div>`;
+  const IC = {ok:'✓', warn:'!', crit:'✕', na:'–', info:'i'};
+  $('rules').innerHTML = RULES.map(R => {
+    const bad = F.filter(s => ['warn','crit'].includes(s.rules[R.id]?.st));
+    const worst = bad.some(s=>s.rules[R.id].st==='crit') ? 'crit' : bad.length ? 'warn' : 'ok';
+    const cls = R.info && bad.length ? 'info' : worst;
+    return `<div class="rule"><span class="ic ${cls}">${IC[cls]}</span><div><h4>${esc(R.t)}</h4>${bad.length ? `<p>${bad.map(s => `<a href="#" data-s="${s.id}" style="color:var(--agu-blue-deep);font-weight:600">${esc(s.curto)}</a>: ${esc(s.rules[R.id].msg || '')}`).join('<br>')}</p><p class="basis">Como corrigir: ${esc(R.fix)}</p>` : '<p>Todos os servidores atendem.</p>'}<p class="basis">${esc(R.basis)}</p></div><span class="badge ${bad.length ? (cls==='crit'?'b-red':cls==='info'?'b-blue':'b-amber') : 'b-green'}">${bad.length ? plural(bad.length,'caso','casos') : 'ok'}</span></div>`;
+  }).join('');
+  $('rules').querySelectorAll('[data-s]').forEach(a => a.onclick = e => { e.preventDefault(); openDrawer(+a.dataset.s); });
+  const short = {siape:'SIAPE', setor:'Setor', datas:'Datas', sobrep:'Sem sobrep.', etapas:'≤ 3 etapas', limite:'≤ 30 dias', completa:'30d com data', exercicio:'No ano', clt:'CLT*'};
+  $('matrix').innerHTML = `<thead><tr><th>Servidor</th>${RULES.map(R=>`<th title="${esc(R.t)}">${short[R.id]}</th>`).join('')}</tr></thead><tbody>${[...F].sort((a,b)=>a.nome.localeCompare(b.nome)).map(s => `<tr><td><a href="#" data-s="${s.id}" style="color:inherit;text-decoration:none">${esc(s.curto)}</a></td>${RULES.map(R => { const r = s.rules[R.id]; const st = r.st; return `<td><span class="mk ${st==='na'?'na':st}" ${r.msg?`data-tip="${esc(`<b>${s.curto} · ${R.t}</b>${r.msg}`)}"`:''}>${IC[st]}</span></td>`; }).join('')}</tr>`).join('')}</tbody>`;
+  $('matrix').querySelectorAll('[data-s]').forEach(a => a.onclick = e => { e.preventDefault(); openDrawer(+a.dataset.s); });
+  $('issues').innerHTML = RAW_ISSUES.map(i => `<li><span class="cellref">${esc(i.ref)}</span><div><b>${esc(i.t)}</b><br><span class="sub" style="font-size:12px">${esc(i.d)}</span></div></li>`).join('');
+}
+
+/* =========================================================
+   FICHA (DRAWER)
+   ========================================================= */
+function openDrawer(id){
+  const s = SERV.find(x => x.id === id); if (!s) return;
+  const st = statusServ(s);
+  $('drHead').innerHTML = `${avatar(s,48)}<div style="min-width:0"><h3>${esc(s.nomeT)}</h3><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center">${sectag(s)}<span class="sub">SIAPE ${s.siape?esc(s.siape):'não informado'}</span><span class="badge ${st.cls}">${esc(st.txt)}</span></div></div><button class="dr-close" type="button" id="drClose" aria-label="Fechar">&times;</button>`;
+  const ano = s.periodos[0]?.ini.getFullYear() || today.getFullYear();
+  const A = new Date(ano,0,1), B = new Date(Math.max(new Date(ano,11,31), ...s.periodos.map(p=>+p.fim))); const tot = diffD(A,B)+1, pc = d => diffD(A,d)/tot*100;
+  const conf = s.periodos.flatMap(p => p.conf.map(c => ({p, c})));
+  const IC = {ok:'✓', warn:'!', crit:'✕', na:'–'};
+  const issues = RULES.filter(R => ['warn','crit'].includes(s.rules[R.id].st));
+  $('drBody').innerHTML = `
+    <div class="dr-stats"><div><b>${s.prog}</b><span>programados</span></div><div><b>${s.goz}</b><span>gozados</span></div><div><b>${s.uteis}</b><span>dias úteis</span></div><div><b style="color:${s.saldo?'var(--danger)':'var(--agu-green-ink)'}">${s.saldo}</b><span>saldo</span></div></div>
+    <div><div class="lbl" style="margin-bottom:6px">Exercício ${ano}</div><div class="mini-tl">${s.periodos.map(p=>`<i style="left:${pc(p.ini)}%;width:${Math.max(p.corridos/tot*100,.6)}%;background:var(${p.sit==='gozo'?'--st-gozo':p.sit==='programada'?'--st-prog':'--st-done'})"></i>`).join('')}${today>=A&&today<=B?`<i class="t" style="left:${pc(today)}%"></i>`:''}</div><div class="mini-axis"><span>jan</span><span>abr</span><span>jul</span><span>out</span><span>${B.getFullYear()>ano?'jan '+B.getFullYear():'dez'}</span></div></div>
+    <div><div class="lbl" style="margin-bottom:8px">Períodos</div><div class="stack">${s.periodos.length ? s.periodos.map(p => `<div class="per"><span class="no">${p.n}º</span><div><b>${fmt(p.ini)} a ${fmt(p.fim)}</b><div class="sub">${DOW[p.ini.getDay()]} a ${DOW[p.fim.getDay()]} · ${p.corridos} corridos · ${p.uteis} úteis · retorno ${fmt(addD(p.fim,1))}</div>${p.fer.length?`<div style="margin-top:4px;display:flex;gap:4px;flex-wrap:wrap">${p.fer.map(h=>`<span class="badge b-hol">${fmtS(h.d)} ${esc(h.n)}</span>`).join('')}</div>`:''}</div><span class="badge ${SIT_B[p.sit]}">${SIT_LBL[p.sit]}</span></div>`).join('') : `<div class="al crit"><span class="stripe"></span><div><h4>Nenhum período programado</h4><p>${DIREITO} dias do exercício sem data. Use o simulador para escolher uma janela.</p></div></div>`}</div></div>
+    ${conf.length ? `<div><div class="lbl" style="margin-bottom:8px">Sobreposições no setor</div><div class="stack">${conf.map(({p,c}) => { const i = p.ini>c.p.ini?p.ini:c.p.ini, f = p.fim<c.p.fim?p.fim:c.p.fim; return `<div class="al ${f>=today?'crit':'info'}"><span class="stripe"></span><div><h4>${esc(c.s.nomeT)}</h4><p>${fmt(i)} a ${fmt(f)} · ${diasUteis(i,f)} dias úteis em comum${f<today?' (já ocorrido)':''}</p></div></div>`; }).join('')}</div></div>` : ''}
+    <div><div class="lbl" style="margin-bottom:8px">Conferência da base</div><div class="stack">${issues.length ? issues.map(R => `<div class="check"><span class="ic ${s.rules[R.id].st}">${IC[s.rules[R.id].st]}</span><div><b>${esc(R.t)}</b><p>${esc(s.rules[R.id].msg||'')}</p></div></div>`).join('') : '<div class="check"><span class="ic ok">✓</span><div><b>Todas as verificações atendidas</b></div></div>'}</div></div>
+    ${s.saldo ? `<button class="btn btn-primary" type="button" id="drSim">Simular os ${s.saldo} dias restantes</button>` : ''}
+    <div class="sub">Linha ${s.linha || '—'} da planilha de origem.</div>`;
+  $('drClose').onclick = closeDrawer;
+  if ($('drSim')) $('drSim').onclick = () => { SIM.serv = s.id; SIM.dias = s.saldo; SIM.ini = null; closeDrawer(); setView('simulador'); window.scrollTo({top:0}); };
+  $('drawer').classList.add('open'); $('drawer').setAttribute('aria-hidden','false'); $('scrim').classList.add('open');
+  setTimeout(() => $('drClose').focus(), 50);
+}
+function closeDrawer(){ $('drawer').classList.remove('open'); $('drawer').setAttribute('aria-hidden','true'); $('scrim').classList.remove('open'); }
+$('scrim').onclick = closeDrawer;
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+function renderView(){
+  const F = L();
+  if (ST.view === 'geral'){ renderKPIs(F); renderBrief(F); renderUpcoming(F); renderAvail(F); renderMes(F); renderAlerts(F); }
+  else if (ST.view === 'linha'){ renderGantt(F); renderHeat(F); }
+  else if (ST.view === 'calendario') renderCalendar(F);
+  else if (ST.view === 'equipe') renderTeam(F);
+  else if (ST.view === 'simulador') renderSim();
+  else if (ST.view === 'qualidade') renderQuality(F);
+}
+function renderAll(){
+  document.querySelectorAll('#segSetor button').forEach(b => b.classList.toggle('active', b.dataset.v === ST.setor));
+  ['fServ','fSit','fQ'].forEach(id => $(id).classList.toggle('has-value', !!$(id).value));
+  const F = L(); const per = F.reduce((a,s)=>a+s.periodos.filter(perVis).length,0);
+  $('chipCount').innerHTML = `<b>${F.length}</b> de ${SERV.length} servidores · <b>${per}</b> períodos`;
+  const qa = qualityScore(SERV); $('qCnt').hidden = !qa.crit; $('qCnt').textContent = qa.crit;
+  renderView();
+}
+function boot(base){
+  build(base); RAW_ISSUES = rawIssues(base);
+  const coord = (base.find(s=>s.coord)||{}).coord || 'COEX';
+  $('brandSub').textContent = `Coordenação de Licitações e Contratos · ${coord}`;
+  const anos = [...new Set(SERV.flatMap(s=>s.periodos.map(p=>p.ini.getFullYear())))].sort();
+  $('eyebrow').textContent = `Programação de férias · ${coord} · exercício ${anos[0] || today.getFullYear()}`;
+  $('todayLbl').textContent = fmt(today);
+  $('footCount').textContent = `${SERV.length} servidores · ${SERV.reduce((a,s)=>a+s.periodos.length,0)} períodos · origem: ${ORIGEM}`;
+  SIM.serv = null; SIM.ini = null;
+  initFilters(); chartDefaults(); renderAll();
+}
+
+/* tooltip */
+const tip = $('tip');
+document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); if (!t){ tip.classList.remove('show'); return; } tip.innerHTML = t.dataset.tip; tip.classList.add('show'); });
+document.addEventListener('mousemove', e => { if (!tip.classList.contains('show')) return; const w = tip.offsetWidth, h = tip.offsetHeight; let x = e.clientX+14, y = e.clientY+14; if (x+w > innerWidth-8) x = e.clientX-w-14; if (y+h > innerHeight-8) y = e.clientY-h-14; tip.style.left = x+'px'; tip.style.top = y+'px'; });
+document.addEventListener('focusin', e => { const t = e.target.closest('[data-tip]'); if (!t) return; const r = t.getBoundingClientRect(); tip.innerHTML = t.dataset.tip; tip.classList.add('show'); tip.style.left = Math.min(r.left, innerWidth - tip.offsetWidth - 8)+'px'; tip.style.top = (r.bottom + 8)+'px'; });
+document.addEventListener('focusout', () => tip.classList.remove('show'));
+
+/* tema */
+const rerender = () => { chartDefaults(); renderView(); };
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerender);
+new MutationObserver(rerender).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+$('themeBtn').onclick = () => { const root = document.documentElement; const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); root.dataset.theme = cur === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('painelFeriasTema', root.dataset.theme); } catch(e){} };
+try { const t = localStorage.getItem('painelFeriasTema'); if (t) document.documentElement.dataset.theme = t; } catch(e){}
+
+/* importação */
+const modal = $('uploadModal'), ust = $('uploadStatus');
+const setStatus = (cls, msg) => { ust.hidden = false; ust.className = 'upload-status ' + cls; ust.textContent = msg; };
+$('openUploadBtn').onclick = () => { ust.hidden = true; modal.classList.add('open'); };
+$('closeUploadBtn').onclick = $('cancelUploadBtn').onclick = () => modal.classList.remove('open');
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+$('resetBtn').onclick = () => { ORIGEM = ORIGEM_PADRAO; Object.assign(ST,{setor:'',serv:'',sit:'',q:''}); boot(BASE_ORIGINAL); setStatus('ok','Base original restaurada.'); };
+const dz = $('dropzone'), fi = $('fileInput');
+dz.onclick = () => fi.click(); dz.onkeydown = e => { if (e.key==='Enter'||e.key===' '){ e.preventDefault(); fi.click(); } };
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); if (e.dataTransfer.files[0]) lerArquivo(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if (fi.files[0]) lerArquivo(fi.files[0]); fi.value = ''; });
+function toISO(v){
+  if (v == null || v === '') return null;
+  if (v instanceof Date && !isNaN(v)) return iso(new Date(v.getFullYear(), v.getMonth(), v.getDate()));
+  if (typeof v === 'number' && window.XLSX){ const d = XLSX.SSF.parse_date_code(v); return d ? iso(new Date(d.y, d.m-1, d.d)) : null; }
+  let m = String(v).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m) return iso(new Date(+m[3], +m[2]-1, +m[1]));
+  m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return null;
+}
+function parseWorkbook(wb){
+  for (const nome of wb.SheetNames){
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[nome], {header:1, raw:true, defval:null});
+    const hi = rows.findIndex(r => r && r.some(c => String(c||'').trim().toUpperCase() === 'SIAPE')); if (hi < 0) continue;
+    const H = rows[hi].map(c => String(c||'').trim().toLowerCase());
+    const col = t => H.findIndex(h => h.includes(t));
+    const cS = H.indexOf('siape'), cN = col('servidor'), cC = col('coordena'), cSet = col('setor');
+    const bl = []; H.forEach((h,i) => { if (h.startsWith('início') || h.startsWith('inicio')){ const f = H.findIndex((x,j)=>j>i && x.startsWith('fim')); let t = -1; for (let j=i+1;j<i+6&&j<H.length;j++) if (H[j]==='tipo'){ t=j; break; } bl.push({i,f,t}); } });
+    if (cN < 0 || !bl.length) continue;
+    const base = [];
+    rows.slice(hi+1).forEach((r, k) => { if (!r || !r[cN] || !String(r[cN]).trim()) return;
+      const per = []; bl.forEach((b, bi) => { const a = toISO(r[b.i]), z = toISO(r[b.f]); if (a && z) per.push({ini:a, fim: z >= a ? z : a, tipo: b.t>=0 && r[b.t] && !/conclu|program|gozo/i.test(r[b.t]) ? String(r[b.t]) : 'FÉRIAS', slot:bi+1}); });
+      const sp = r[cS]; base.push({siape: sp==null || ['-',''].includes(String(sp).trim()) ? null : String(sp).trim(), nome:String(r[cN]).trim(), coord: cC>=0 ? r[cC] : null, setorOrig: cSet>=0 ? r[cSet] : '', periodos:per, linha: hi + k + 2}); });
+    if (base.length) return base;
+  }
+  throw new Error('Não encontrei a linha de cabeçalho com "SIAPE" e as colunas de início e fim das férias. Confira se é a planilha de acompanhamento de férias.');
+}
+function lerArquivo(file){
+  if (!window.XLSX){ setStatus('err','A biblioteca de leitura de planilhas não carregou. Verifique a conexão e tente de novo.'); return; }
+  setStatus('ok', `Lendo ${file.name}…`);
+  const fr = new FileReader();
+  fr.onload = e => { try { const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array', cellDates:true}); const base = parseWorkbook(wb);
+      ORIGEM = file.name; Object.assign(ST,{setor:'',serv:'',sit:'',q:''}); boot(base);
+      setStatus('ok', `Base atualizada: ${base.length} servidores e ${base.reduce((a,s)=>a+s.periodos.length,0)} períodos de ${file.name}.`);
+    } catch(err){ setStatus('err', err.message || 'Não foi possível ler o arquivo.'); } };
+  fr.onerror = () => setStatus('err','Não foi possível ler o arquivo selecionado.');
+  fr.readAsArrayBuffer(file);
+}
+
+/* start */
+boot(BASE_ORIGINAL);
+setView((location.hash || '#geral').slice(1), false);
+</script>
+
+</body>
+</html>
